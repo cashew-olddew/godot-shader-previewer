@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://lw1wu203q4w0"]
+
+[ext_resource type="Shader" uid="uid://bn8gjuu4d8ryb" path="res://test.gdshader" id="1_8uh7m"]
+[ext_resource type="Texture2D" uid="uid://mobagl4twsb3" path="res://icon.svg" id="2_6uqi0"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ppyta"]
+shader = ExtResource("1_8uh7m")
+
+[node name="Test" type="Node2D" unique_id=357539299]
+
+[node name="Icon" type="Sprite2D" parent="." unique_id=236814645]
+material = SubResource("ShaderMaterial_ppyta")
+position = Vector2(82, 82)
+texture = ExtResource("2_6uqi0")

@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://dw4o3k5bwxyuj"]
+
+[ext_resource type="Script" uid="uid://og7fsd8c7hlv" path="res://addons/gdshader-partial-preview/partial_preview_dock.gd" id="1_n82db"]
+
+[node name="Control" type="ColorRect" unique_id=161425457]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_n82db")
