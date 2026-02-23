@@ -1,5 +1,8 @@
 shader_type canvas_item;
 
 void fragment() {
-	// Called for every pixel the material is visible on.
+	vec2 uv;
+	uv = UV;
+	uv = fract(uv * 10.);
+	uv *= fract(TIME);
 }
