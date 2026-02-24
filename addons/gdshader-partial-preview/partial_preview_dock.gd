@@ -45,6 +45,7 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 		return original_code
 
 	var current_line_text = lines[line_index]
+	#print_rich("[b]Current line is: [/b]", current_line_text)
 	
 	# Search for variable assignment
 	# TODO: Consider multi-line statements
