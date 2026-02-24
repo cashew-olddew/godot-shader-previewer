@@ -2,10 +2,36 @@
 
 [ext_resource type="Script" uid="uid://og7fsd8c7hlv" path="res://addons/gdshader-partial-preview/partial_preview_dock.gd" id="1_n82db"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_n82db"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mm40d"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rvk8j"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6l7md"]
+
 [node name="Control" type="ColorRect" unique_id=161425457]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0.16078432, 0.16078432, 0.16078432, 1)
 script = ExtResource("1_n82db")
+
+[node name="Label" type="RichTextLabel" parent="." unique_id=830699415]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_n82db")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_mm40d")
+theme_override_styles/background = SubResource("StyleBoxEmpty_rvk8j")
+theme_override_styles/fill = SubResource("StyleBoxEmpty_6l7md")
+bbcode_enabled = true
+text = "Select a line in your shader to get started!"
+autowrap_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1

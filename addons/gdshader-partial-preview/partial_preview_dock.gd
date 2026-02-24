@@ -2,7 +2,10 @@
 extends ColorRect
 class_name PartialPreviewDock
 
+@onready var label = $Label
+
 func update_shader_preview(text: String, current_line_index: int) -> void:
+	label.text = "";
 	var generated_code = _generate_preview_shader(text, current_line_index)
 	
 	var shader_content := Shader.new()
@@ -17,6 +20,7 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	var lines = original_code.split("\n")
 	
 	if line_index >= lines.size():
+		label.text = "Something weird happened... Try restarting the plugin."
 		return original_code
 
 	var current_line_text = lines[line_index]
@@ -27,6 +31,7 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	var var_match = var_regex.search(current_line_text)
 	
 	if not var_match:
+		label.text = "The selected line needs to be an assignment."
 		return original_code
 		
 	var var_name = var_match.get_string(1)
@@ -44,7 +49,9 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 		"vec2":  injection = "COLOR = vec4(%s, 0.0, 1.0);" % var_name
 		"vec3":  injection = "COLOR = vec4(%s, 1.0);" % var_name
 		"vec4":  injection = "COLOR = %s;" % var_name
-		_: return original_code
+		_: 
+			label.text = "Preview unavailable for current assignment.\nSupported types are: [b]float, vec2, vec3, vec4[/b]."
+			return original_code
 		
 	truncated_lines.append(injection)
 	
