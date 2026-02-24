@@ -9,6 +9,7 @@ shader = ExtResource("1_6uqi0")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_6uqi0"]
 shader = ExtResource("1_8uh7m")
+shader_parameter/i = 0.80000001192096
 
 [node name="Test" type="Node2D" unique_id=357539299]
 

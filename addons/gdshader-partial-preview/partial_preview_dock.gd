@@ -4,20 +4,38 @@ class_name PartialPreviewDock
 
 @onready var label = $Label
 
-func update_shader_preview(text: String, current_line_index: int, selected_maderial: Material) -> void:
-	label.text = "";
+func update_shader_preview(text: String, current_line_index: int, selected_material: ShaderMaterial) -> void:
+	label.text = ""
 	var generated_code = _generate_preview_shader(text, current_line_index)
-	
 	var shader_content := Shader.new()
 	shader_content.code = generated_code
 	
-	var shader_material = selected_maderial
-	if not shader_material:
+	# A new material is created to not overwrite the node's actual material
+	var preview_material = ShaderMaterial.new()
+	preview_material.shader = shader_content
+	
+	# TODO: Currently this 'registers' as selected for every node. Find a way to differenciate
+	if not selected_material:
 		label.text = "A node using the shader must be selected."
-		shader_material = ShaderMaterial.new()
-	else:
-		shader_material.shader = shader_content
-	material = shader_material
+		material = null
+		return
+		
+	# TODO: Find a way to call this whenever a parameter changes
+	_sync_material_parameters(selected_material, preview_material)
+
+	material = preview_material
+
+# Helper function to copy uniform values
+func _sync_material_parameters(source: ShaderMaterial, target: ShaderMaterial) -> void:
+	if not source.shader:
+		return
+		
+	# Get all uniforms defined in the original shader
+	var params = source.shader.get_shader_uniform_list()
+	for p in params:
+		var param_name = p["name"]
+		var param_value = source.get_shader_parameter(param_name)
+		target.set_shader_parameter(param_name, param_value)
 
 func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	var lines = original_code.split("\n")
