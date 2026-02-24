@@ -4,16 +4,19 @@ class_name PartialPreviewDock
 
 @onready var label = $Label
 
-func update_shader_preview(text: String, current_line_index: int) -> void:
+func update_shader_preview(text: String, current_line_index: int, selected_maderial: Material) -> void:
 	label.text = "";
 	var generated_code = _generate_preview_shader(text, current_line_index)
 	
 	var shader_content := Shader.new()
 	shader_content.code = generated_code
 	
-	var shader_material := ShaderMaterial.new()
-	shader_material.shader = shader_content
-	
+	var shader_material = selected_maderial
+	if not shader_material:
+		label.text = "A node using the shader must be selected."
+		shader_material = ShaderMaterial.new()
+	else:
+		shader_material.shader = shader_content
 	material = shader_material
 
 func _generate_preview_shader(original_code: String, line_index: int) -> String:
@@ -26,6 +29,7 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	var current_line_text = lines[line_index]
 	
 	# Search for variable assignment
+	# TODO: Consider multi-line statements
 	var var_regex = RegEx.new()
 	var_regex.compile(r"(\w+)\s*([+\-*/%]?=)")
 	var var_match = var_regex.search(current_line_text)

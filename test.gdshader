@@ -131,9 +131,6 @@ void fragment() {
 	tiled_uv = apply_mirror(tiled_uv, local_x_mirror, local_y_mirror);
 	
 	vec2 uv = (tiled_uv - position) * 2.0;
-	if (true) {
-		uv = (tiled_uv - position) * 2.0;
-	}
 	uv = rotate(uv, radians(rotation_angle));
 
 	float local_progress = get_local_progress(grid);

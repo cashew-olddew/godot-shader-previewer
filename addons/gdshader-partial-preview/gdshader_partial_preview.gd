@@ -4,7 +4,7 @@ extends EditorPlugin
 var dock: EditorDock = null
 var dock_scene: PartialPreviewDock = null
 var shader_code_editor: CodeEdit = null
-var current_selection: Node = null
+var selected_node: Node = null
 
 func _enable_plugin():
 	pass
@@ -27,17 +27,31 @@ func _enter_tree():
 	
 	add_dock(dock)
 	
-	get_shader_code_edit()
+	update_shader_code_edit()
 	# TODO: find a way to update the shader_code_editor when new shader added or shader changed
 	if shader_code_editor:
 		shader_code_editor.caret_changed.connect(_on_preview_try)
+		
+	EditorInterface.get_selection().selection_changed.connect(_on_node_selection_changed)
+	# A node might already be selected when plugin enters tree
+	_on_node_selection_changed()
 	
 func _on_preview_try() -> void:
 	var caret_line_index = shader_code_editor.get_caret_line()
 	var caret_text: String = shader_code_editor.text
-	dock_scene.update_shader_preview(caret_text, caret_line_index)
+	var selected_maderial = selected_node.material
+	dock_scene.update_shader_preview(caret_text, caret_line_index, selected_maderial)
+
+func _on_node_selection_changed() -> void:
+	var selected_nodes = EditorInterface.get_selection().get_selected_nodes()
+	if not selected_nodes:
+		selected_node = null
+	selected_node = selected_nodes[0]
 	
-func get_shader_code_edit() -> void:
+	# Update preview on node swap.
+	_on_preview_try()
+
+func update_shader_code_edit() -> void:
 	# Currently there's no public API for getting the Shader Editor,
 	# so I get the internal ShaderEditor class to find it.
 	var base_control = EditorInterface.get_base_control()
