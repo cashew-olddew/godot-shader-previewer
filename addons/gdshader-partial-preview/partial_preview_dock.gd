@@ -13,9 +13,8 @@ func update_shader_preview(text: String, current_line_index: int, selected_mater
 	# A new material is created to not overwrite the node's actual material
 	var preview_material = ShaderMaterial.new()
 	preview_material.shader = shader_content
-	
-	# TODO: Currently this 'registers' as selected for every node. Find a way to differenciate
-	if not selected_material:
+
+	if not selected_material or not _match_uniforms(selected_material, preview_material):
 		label.text = "A node using the shader must be selected."
 		material = null
 		return
@@ -25,6 +24,31 @@ func update_shader_preview(text: String, current_line_index: int, selected_mater
 
 	material = preview_material
 
+# Helper function to check if two shaders correspond
+# Kind of hacky, as it just matches uniforms, but good enough for now
+func _match_uniforms(source: ShaderMaterial, target: ShaderMaterial) -> bool:
+	if not source.shader or not target.shader:
+		return false
+	
+	var source_params = source.shader.get_shader_uniform_list()
+	var target_params = target.shader.get_shader_uniform_list()
+	
+	if source_params.size() != target_params.size():
+		return false
+	
+	# get_shader_uniform_list returns a dictionary and I'm not sure how all
+	# values inside it are set. Because of that I'm comparing only name and type
+	var target_set = {}
+	for p in target_params:
+		target_set[p.name + str(p.type)] = true
+	
+	for p in source_params:
+		var key = p.name + str(p.type)
+		if not target_set.has(key):
+			return false
+			
+	return true
+	
 # Helper function to copy uniform values
 func _sync_material_parameters(source: ShaderMaterial, target: ShaderMaterial) -> void:
 	if not source.shader:
@@ -45,7 +69,6 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 		return original_code
 
 	var current_line_text = lines[line_index]
-	#print_rich("[b]Current line is: [/b]", current_line_text)
 	
 	# Search for variable assignment
 	# TODO: Consider multi-line statements
