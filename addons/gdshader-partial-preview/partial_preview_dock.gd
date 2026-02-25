@@ -115,12 +115,14 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 func _find_var_type(var_name: String, full_code: String, line_index: int) -> String:
 	var lines = full_code.split("\n")
 	var type_regex = RegEx.new()
+	# TODO: Update message to include int and bool
 	type_regex.compile("(float|vec2|vec3|vec4|int|bool)\\s+" + var_name + "\\b")
 	
 	for i in range(line_index, -1, -1):
 		var m = type_regex.search(lines[i])
 		if m: return m.get_string(1)
 			
+	# TODO: See what you do when someone samples TEXTURE
 	if var_name in ["UV", "SCREEN_UV"]: return "vec2"
 	if var_name in ["COLOR", "MODULATE"]: return "vec4"
 	if var_name == "TIME": return "float"

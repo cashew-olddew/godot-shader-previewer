@@ -28,6 +28,9 @@ func _enter_tree():
 	EditorInterface.get_selection().selection_changed.connect(_on_node_selection_changed)
 	# A node might already be selected when plugin enters tree
 	_on_node_selection_changed()
+
+func _process(delta):
+	_on_preview_try()
 	
 func _on_preview_try() -> void:
 	if not shader_code_editor:
@@ -43,20 +46,6 @@ func _on_preview_try() -> void:
 func _on_node_selection_changed() -> void:
 	var selected_nodes = EditorInterface.get_selection().get_selected_nodes()
 	selected_node = selected_nodes[0] if not selected_nodes.is_empty() else null
-	
-	# Update preview on node swap.
-	_on_preview_try()
-
-func _update_code_editor_signals(new_code_editor: CodeEdit) -> void:
-	if shader_code_editor and shader_code_editor.caret_changed.is_connected(_on_preview_try):
-		shader_code_editor.caret_changed.disconnect(_on_preview_try)
-	new_code_editor.caret_changed.connect(_on_preview_try)
-
-func _disconnect_old_editor() -> void:
-	if shader_code_editor and is_instance_valid(shader_code_editor):
-		if shader_code_editor.caret_changed.is_connected(_on_preview_try):
-			shader_code_editor.caret_changed.disconnect(_on_preview_try)
-	shader_code_editor = null
 
 func _update_active_shader_editor() -> void:
 	if not code_editor_parent:
@@ -72,18 +61,12 @@ func _update_active_shader_editor() -> void:
 			
 		var ce = code_edits[0]
 		if shader_code_editor != ce:
-			_disconnect_old_editor()
-			
 			shader_code_editor = ce
-			shader_code_editor.caret_changed.connect(_on_preview_try)
-				
-	_on_preview_try()
 
 func update_shader_editor_reference(_tab: int) -> void:
 	if not code_editor_parent:
 		initialize_shader_code_edit()
 	_update_active_shader_editor()
-	_on_preview_try()
 
 func initialize_shader_code_edit() -> void:
 	# Currently there's no public API for getting the Shader Editor,
