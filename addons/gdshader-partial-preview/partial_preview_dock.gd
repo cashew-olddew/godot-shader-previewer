@@ -60,6 +60,48 @@ func _sync_material_parameters(source: ShaderMaterial, target: ShaderMaterial) -
 		var param_value = source.get_shader_parameter(param_name)
 		target.set_shader_parameter(param_name, param_value)
 
+func _find_statement(lines: PackedStringArray, line_index: int) -> Dictionary:
+	var var_regex = RegEx.new()
+	var_regex.compile(r"(\w+)\s*([+\-*/%]?=)(?!=)")
+	
+	# Walk backward from the caret to find the line with the assignment operator
+	var stmt_start = line_index
+	var var_match = var_regex.search(lines[stmt_start])
+	while not var_match and stmt_start > 0:
+		var current_line = lines[stmt_start].strip_edges()
+		
+		if stmt_start < line_index and (current_line.is_empty() or current_line.ends_with(";") or current_line.ends_with("{") or current_line.ends_with("}")):
+			return {}
+			
+		stmt_start -= 1
+		var_match = var_regex.search(lines[stmt_start])
+	
+	if not var_match:
+		return {}
+	
+	# Flow control selection can't be previewed
+	var flow_regex = RegEx.new()
+	flow_regex.compile(r"^(else\s+)?(if|while|for)\b")
+	if flow_regex.search(lines[stmt_start].strip_edges()):
+		return {}
+	
+	var stmt_end = stmt_start
+	var max_scan = min(stmt_start + 20, lines.size() - 1)
+	while stmt_end < max_scan and not lines[stmt_end].strip_edges().ends_with(";"):
+		stmt_end += 1
+	
+	if not lines[stmt_end].strip_edges().ends_with(";"):
+		return {}
+	
+	if line_index > stmt_end:
+		return {}
+	
+	return {
+		"var_name": var_match.get_string(1),
+		"start": stmt_start,
+		"end": stmt_end,
+	}
+
 func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	var lines = original_code.split("\n")
 	
@@ -67,33 +109,28 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 		label.text = "Something weird happened... Try restarting the plugin."
 		material = null
 		return original_code
-
-	var current_line_text = lines[line_index]
+		
+	var stmt = _find_statement(lines, line_index)
 	
-	# Search for variable assignment
-	# TODO: Consider multi-line statements
-	var var_regex = RegEx.new()
-	var_regex.compile(r"(\w+)\s*([+\-*/%]?=)")
-	var var_match = var_regex.search(current_line_text)
-	
-	if not var_match:
+	if stmt.is_empty():
 		label.text = "The selected line needs to be an assignment."
 		material = null
 		return original_code
 		
-	var var_name = var_match.get_string(1)
-	var type = _find_var_type(var_name, original_code, line_index)
+	var var_name: String = stmt["var_name"]
+	var last_line: int = stmt["end"]
+	var type = _find_var_type(var_name, original_code, last_line)
 	
 	# All code before assignment stays as it was
 	var truncated_lines = []
-	for i in range(line_index + 1):
+	for i in range(last_line + 1):
 		truncated_lines.append(lines[i])
 	
 	# Inject COLOR preview
 	var injection = ""
 	match type:
-		"bool":  injection = "COLOR = vec4(vec3(float(%s)), 1.0)" % var_name
-		"int":   injection = "COLOR = vec4(vec3(float(%s)), 1.0)" % var_name
+		"bool":  injection = "COLOR = vec4(vec3(float(%s)), 1.0);" % var_name
+		"int":   injection = "COLOR = vec4(vec3(float(%s)), 1.0);" % var_name
 		"float": injection = "COLOR = vec4(vec3(%s), 1.0);" % var_name
 		"vec2":  injection = "COLOR = vec4(%s, 0.0, 1.0);" % var_name
 		"vec3":  injection = "COLOR = vec4(%s, 1.0);" % var_name
@@ -119,14 +156,28 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 func _find_var_type(var_name: String, full_code: String, line_index: int) -> String:
 	var lines = full_code.split("\n")
 	var type_regex = RegEx.new()
-	type_regex.compile("(float|vec2|vec3|vec4|int|bool)\\s+" + var_name + "\\b")
 	
+	# Matches a type keyword, followed by anything EXCEPT a semicolon, then the variable name.
+	# This safely handles: "float my_var;" AND "float a, b, my_var;"
+	type_regex.compile(r"\b(float|vec2|vec3|vec4|int|bool|sampler2D)\b[^;]*\b" + var_name + r"\b")
+	
+	# Walk backwards from the end of the assignment statement
 	for i in range(line_index, -1, -1):
-		var m = type_regex.search(lines[i])
-		if m: return m.get_string(1)
+		# Strip out comments before checking so we don't catch commented-out declarations
+		var clean_line = lines[i].split("//")[0]
+		
+		var m = type_regex.search(clean_line)
+		if m: 
+			return m.get_string(1)
 			
-	# TODO: See what you do when someone samples TEXTURE
-	if var_name in ["UV", "SCREEN_UV"]: return "vec2"
-	if var_name in ["COLOR", "MODULATE"]: return "vec4"
-	if var_name == "TIME": return "float"
+	# Built-in Godot Shader Variables (CanvasItem & common Spatial)
+	if var_name in ["UV", "SCREEN_UV", "POINT_COORD"]: 
+		return "vec2"
+	if var_name in ["COLOR", "MODULATE"]: 
+		return "vec4"
+	if var_name in ["TIME", "PI", "TAU"]: 
+		return "float"
+	if var_name in ["VERTEX", "NORMAL"]: 
+		return "vec2" 
+	
 	return ""
