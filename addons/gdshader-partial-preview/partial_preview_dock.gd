@@ -9,7 +9,7 @@ func update_shader_preview(text: String, current_line_index: int, selected_mater
 	var generated_code = _generate_preview_shader(text, current_line_index)
 	var shader_content := Shader.new()
 	shader_content.code = generated_code
-	
+
 	# A new material is created to not overwrite the node's actual material
 	var preview_material = ShaderMaterial.new()
 	preview_material.shader = shader_content
@@ -19,7 +19,6 @@ func update_shader_preview(text: String, current_line_index: int, selected_mater
 		material = null
 		return
 		
-	# TODO: Find a way to call this whenever a parameter changes
 	_sync_material_parameters(selected_material, preview_material)
 
 	material = preview_material
@@ -66,6 +65,7 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	
 	if line_index >= lines.size():
 		label.text = "Something weird happened... Try restarting the plugin."
+		material = null
 		return original_code
 
 	var current_line_text = lines[line_index]
@@ -78,6 +78,7 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	
 	if not var_match:
 		label.text = "The selected line needs to be an assignment."
+		material = null
 		return original_code
 		
 	var var_name = var_match.get_string(1)
@@ -91,12 +92,15 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	# Inject COLOR preview
 	var injection = ""
 	match type:
+		"bool":  injection = "COLOR = vec4(vec3(float(%s)), 1.0)" % var_name
+		"int":   injection = "COLOR = vec4(vec3(float(%s)), 1.0)" % var_name
 		"float": injection = "COLOR = vec4(vec3(%s), 1.0);" % var_name
 		"vec2":  injection = "COLOR = vec4(%s, 0.0, 1.0);" % var_name
 		"vec3":  injection = "COLOR = vec4(%s, 1.0);" % var_name
 		"vec4":  injection = "COLOR = %s;" % var_name
 		_: 
-			label.text = "Preview unavailable for current assignment.\nSupported types are: [b]float, vec2, vec3, vec4[/b]."
+			label.text = "Preview unavailable for current assignment.\nSupported types are: [b]bool, int, float, vec2, vec3, vec4[/b]."
+			material = null
 			return original_code
 		
 	truncated_lines.append(injection)
@@ -115,7 +119,6 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 func _find_var_type(var_name: String, full_code: String, line_index: int) -> String:
 	var lines = full_code.split("\n")
 	var type_regex = RegEx.new()
-	# TODO: Update message to include int and bool
 	type_regex.compile("(float|vec2|vec3|vec4|int|bool)\\s+" + var_name + "\\b")
 	
 	for i in range(line_index, -1, -1):
