@@ -7,6 +7,10 @@ var shader_code_editor: CodeEdit = null
 var code_editor_parent: TabContainer = null
 var selected_node: Node = null
 
+var _last_text: String = ""
+var _last_caret: int = -1
+var _last_material_params: Dictionary = {}
+
 func _enable_plugin():
 	pass
 
@@ -30,12 +34,35 @@ func _enter_tree():
 	_on_node_selection_changed()
 
 func _process(delta):
-	_on_preview_try()
-	
-func _on_preview_try() -> void:
 	if not shader_code_editor:
 		return
+		
+	var current_text = shader_code_editor.text
+	var current_caret = shader_code_editor.get_caret_line()
+	var current_params = _snapshot_material_params()
+	
+	# Only update when something actually changed
+	if current_text == _last_text and current_caret == _last_caret and current_params == _last_material_params:
+		return
+	
+	_last_text = current_text
+	_last_caret = current_caret
+	_last_material_params = current_params
+	_on_preview_try()
 
+func _snapshot_material_params() -> Dictionary:
+	if not selected_node or not "material" in selected_node:
+		return {}
+	var mat = selected_node.material as ShaderMaterial
+	if not mat or not mat.shader:
+		return {}
+	var result := {}
+	for p in mat.shader.get_shader_uniform_list():
+		var val = mat.get_shader_parameter(p["name"])
+		result[p["name"]] = val
+	return result
+	
+func _on_preview_try() -> void:
 	var caret_line_index = shader_code_editor.get_caret_line()
 	var shader_text: String = shader_code_editor.text
 	var selected_material = null
@@ -46,6 +73,7 @@ func _on_preview_try() -> void:
 func _on_node_selection_changed() -> void:
 	var selected_nodes = EditorInterface.get_selection().get_selected_nodes()
 	selected_node = selected_nodes[0] if not selected_nodes.is_empty() else null
+	_last_material_params = {} # Force update on selection change
 
 func _update_active_shader_editor() -> void:
 	if not code_editor_parent:
