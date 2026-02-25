@@ -12,6 +12,7 @@ func _ready():
 func _show_error(message: String) -> void:
 	label.text = message
 	material = null
+	texture = _initial_texture
 
 func update_shader_preview(text: String, current_line_index: int, selected_material: ShaderMaterial) -> void:
 	label.text = ""
@@ -116,8 +117,39 @@ func _find_statement(lines: PackedStringArray, line_index: int) -> Dictionary:
 		"end": stmt_end,
 	}
 
+func _get_enclosing_function(lines: PackedStringArray, line_index: int) -> String:
+	var brace_stack = 0
+	var func_regex = RegEx.new()
+	func_regex.compile(r"void\s+(\w+)\s*\(")
+
+	for i in range(line_index, -1, -1):
+		# 1. Strip comments AND trailing whitespace
+		var clean_line = lines[i].split("//")[0].strip_edges()
+		if clean_line.is_empty():
+			continue
+
+		brace_stack += clean_line.count("}")
+		brace_stack -= clean_line.count("{")
+
+		if brace_stack < 0:
+			var m = func_regex.search(clean_line)
+			if m:
+				return m.get_string(1)
+			
+			# If we exited a block but didn't find a function head on this line,
+			# the user might have put the '{' on its own line. 
+			# We keep looking back for the function signature.
+			brace_stack = 0 
+				
+	return "" # Global scope
+
 func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	var lines = original_code.split("\n")
+	var enclosing_function = _get_enclosing_function(lines, line_index)
+	
+	if enclosing_function != "fragment":
+		_show_error("Preview only supports assignments in the [b]fragment()[/b] function")
+		return original_code
 	
 	if line_index >= lines.size():
 		_show_error("Something weird happened... Try restarting the plugin.")
