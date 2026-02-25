@@ -74,6 +74,8 @@ func _on_node_selection_changed() -> void:
 	var selected_nodes = EditorInterface.get_selection().get_selected_nodes()
 	selected_node = selected_nodes[0] if not selected_nodes.is_empty() else null
 	_last_material_params = {} # Force update on selection change
+	if dock_scene:
+		dock_scene.update_texture(selected_node)
 
 func _update_active_shader_editor() -> void:
 	if not code_editor_parent:
