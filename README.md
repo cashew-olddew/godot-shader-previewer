@@ -3,7 +3,7 @@
 A real-time variable inspector and visual debugger for Godot shaders.
 Adds the visual shader node preview feature in the code editor.
 
-[![Addon Preview](https://raw.githubusercontent.com/cashew-olddew/godot-shader-previewer/main/meta/preview.mp4)](https://raw.githubusercontent.com/cashew-olddew/godot-shader-previewer/main/meta/preview.mp4)
+https://github.com/user-attachments/assets/a2d11d94-5015-4043-a456-7bdf7684ee6a
 
 ## Features
 
