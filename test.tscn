@@ -2,56 +2,17 @@
 
 [ext_resource type="Shader" uid="uid://bn8gjuu4d8ryb" path="res://test.gdshader" id="1_8uh7m"]
 [ext_resource type="Texture2D" uid="uid://mobagl4twsb3" path="res://icon.svg" id="2_6uqi0"]
-[ext_resource type="Shader" uid="uid://blnv2t85rgfap" path="res://addons/gdshader-partial-preview/1.gdshader" id="3_6uqi0"]
-
-[sub_resource type="Gradient" id="Gradient_ppyta"]
-offsets = PackedFloat32Array(0, 0.273743, 0.6312849, 1)
-colors = PackedColorArray(0, 0, 0, 1, 0.23448856, 0.23448856, 0.23448856, 1, 0.51955307, 0.51955307, 0.51955307, 1, 1, 1, 1, 1)
-
-[sub_resource type="GradientTexture1D" id="GradientTexture1D_ykrsh"]
-gradient = SubResource("Gradient_ppyta")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ppyta"]
 shader = ExtResource("1_8uh7m")
-shader_parameter/use_sprite_alpha = true
-shader_parameter/use_transition_texture = true
-shader_parameter/transition_texture = SubResource("GradientTexture1D_ykrsh")
-shader_parameter/transition_type = 0
-shader_parameter/position = Vector2(0, 0)
-shader_parameter/invert = false
-shader_parameter/grid_size = Vector2(5, 5)
-shader_parameter/rotation_angle = 10.0
-shader_parameter/global_x_mirror = true
-shader_parameter/global_y_mirror = true
-shader_parameter/local_x_mirror = true
-shader_parameter/local_y_mirror = false
-shader_parameter/stagger = Vector2(0, 0)
-shader_parameter/cumulative_stagger_flip = false
-shader_parameter/cumulative_stagger = Vector2(0, 0)
-shader_parameter/stagger_frequency = Vector2i(2, 2)
-shader_parameter/flip_frequency = Vector2i(1, 1)
-shader_parameter/basic_feather = 0.0
-shader_parameter/use_mask_size = false
-shader_parameter/mask_size = Vector2(100, 100)
-shader_parameter/edges = 3
-shader_parameter/shape_feather = 3.8050001807375002
-shader_parameter/sectors = 1
-shader_parameter/clock_feather = 0.0
-shader_parameter/progress = 0.925
-shader_parameter/progress_bias = Vector2(1.445, 0)
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_6uqi0"]
-shader = ExtResource("3_6uqi0")
-shader_parameter/i = 0.40000000596048
+shader_parameter/time_speed = 1.0
+shader_parameter/scale = 10.0
+shader_parameter/custom_color = Color(0.2, 0.5, 0.8, 1)
+shader_parameter/brighten = true
 
 [node name="Test" type="Node2D" unique_id=357539299]
 
 [node name="Icon" type="Sprite2D" parent="." unique_id=236814645]
 material = SubResource("ShaderMaterial_ppyta")
-position = Vector2(82, 82)
-texture = ExtResource("2_6uqi0")
-
-[node name="Icon2" type="Sprite2D" parent="." unique_id=1323889543]
-material = SubResource("ShaderMaterial_6uqi0")
-position = Vector2(240, 80)
+position = Vector2(442, 166)
 texture = ExtResource("2_6uqi0")

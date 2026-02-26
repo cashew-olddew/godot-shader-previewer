@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dw4o3k5bwxyuj"]
 
-[ext_resource type="Script" uid="uid://og7fsd8c7hlv" path="res://addons/gdshader-partial-preview/partial_preview_dock.gd" id="1_n82db"]
+[ext_resource type="Script" uid="uid://og7fsd8c7hlv" path="res://addons/shader-line-previewer/shader_line_previewer_dock.gd" id="1_vam2h"]
 
 [sub_resource type="Gradient" id="Gradient_n82db"]
 offsets = PackedFloat32Array(0)
@@ -25,7 +25,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture1D_mm40d")
-script = ExtResource("1_n82db")
+script = ExtResource("1_vam2h")
 
 [node name="Label" type="RichTextLabel" parent="." unique_id=830699415]
 layout_mode = 1

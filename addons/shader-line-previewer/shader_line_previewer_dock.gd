@@ -1,6 +1,6 @@
 @tool
 extends TextureRect
-class_name PartialPreviewDock
+class_name ShaderLinePreviewerDock
 
 @onready var label = $Label
 
@@ -77,7 +77,7 @@ func _sync_material_parameters(source: ShaderMaterial, target: ShaderMaterial) -
 
 func _find_statement(lines: PackedStringArray, line_index: int) -> Dictionary:
 	var var_regex = RegEx.new()
-	var_regex.compile(r"(\w+)\s*([+\-*/%]?=)(?!=)")
+	var_regex.compile(r"([\w.]+)\s*([+\-*/%]?=)(?!=)")
 	
 	# Walk backward from the caret to find the line with the assignment operator
 	var stmt_start = line_index
@@ -110,9 +110,12 @@ func _find_statement(lines: PackedStringArray, line_index: int) -> Dictionary:
 	
 	if line_index > stmt_end:
 		return {}
+		
+	var full_captured_path = var_match.get_string(1) # e.g. "my_vec.xy"
+	var base_var_name = full_captured_path.split(".")[0] # e.g. "my_vec"
 	
 	return {
-		"var_name": var_match.get_string(1),
+		"var_name": base_var_name,
 		"start": stmt_start,
 		"end": stmt_end,
 	}
