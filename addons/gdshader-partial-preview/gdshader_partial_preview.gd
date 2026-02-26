@@ -11,6 +11,11 @@ var _last_text: String = ""
 var _last_caret: int = -1
 var _last_material_params: Dictionary = {}
 
+# When engine starts, the plugin enters tree before the TextShaderEditor.
+# For this reason we try a few times to link them
+var _try_load_timer: Timer = null
+var _load_tries_left: int = 60 # Try for 2 minutes (60 times. One try takes 2 seconds.)
+
 func _enable_plugin():
 	pass
 
@@ -19,7 +24,6 @@ func _disable_plugin():
 
 func _enter_tree():
 	dock_scene = preload("res://addons/gdshader-partial-preview/partial_preview_dock.tscn").instantiate()
-	
 	# Add new dock
 	dock = EditorDock.new()
 	dock.add_child(dock_scene)
@@ -27,11 +31,18 @@ func _enter_tree():
 	dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BL
 	add_dock(dock)
 	
+	_try_load_timer = Timer.new()
+	add_child(_try_load_timer)
+	
+	_try_load_timer.one_shot = true
+	_try_load_timer.timeout.connect(initialize_shader_code_edit)
+	
 	initialize_shader_code_edit()
 		
 	EditorInterface.get_selection().selection_changed.connect(_on_node_selection_changed)
 	# A node might already be selected when plugin enters tree
 	_on_node_selection_changed()
+	
 
 func _process(delta):
 	if not shader_code_editor:
@@ -104,6 +115,9 @@ func initialize_shader_code_edit() -> void:
 	var base_control = EditorInterface.get_base_control()
 	var shader_editors = base_control.find_children("*", "TextShaderEditor", true, false)
 	if shader_editors.size() == 0:
+		if _load_tries_left > 0:
+			_try_load_timer.start(2)
+			_load_tries_left -= 1
 		return
 	
 	# The parent of the ShaderEditors is a TabContainer.
@@ -119,4 +133,8 @@ func initialize_shader_code_edit() -> void:
 
 func _exit_tree():
 	remove_dock(dock)
-	dock.queue_free()
+	if dock:
+		dock.queue_free()
+	if _try_load_timer:
+		_try_load_timer.queue_free()
+	
