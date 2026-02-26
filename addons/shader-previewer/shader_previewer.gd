@@ -19,9 +19,12 @@ var _load_tries_left: int = 60 # Try for 2 minutes (60 times. One try takes 2 se
 func _enter_tree():
 	dock_scene = preload("res://addons/shader-previewer/shader_previewer_dock.tscn").instantiate()
 	# Add new dock
+	var icon_tex = preload("res://assets/shader.svg")
+	
 	dock = EditorDock.new()
 	dock.add_child(dock_scene)
 	dock.title = "Shader Preview"
+	dock.dock_icon = icon_tex
 	dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BL
 	add_dock(dock)
 	
