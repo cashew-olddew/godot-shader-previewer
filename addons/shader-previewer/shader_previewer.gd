@@ -17,7 +17,7 @@ var _try_load_timer: Timer = null
 var _load_tries_left: int = 60 # Try for 2 minutes (60 times. One try takes 2 seconds.)
 
 func _enter_tree():
-	dock_scene = preload("res://addons/shader-line-previewer/shader_line_previewer_dock.tscn").instantiate()
+	dock_scene = preload("res://addons/shader-previewer/shader_previewer_dock.tscn").instantiate()
 	# Add new dock
 	dock = EditorDock.new()
 	dock.add_child(dock_scene)

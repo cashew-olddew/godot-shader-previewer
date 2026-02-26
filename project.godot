@@ -10,14 +10,14 @@ config_version=5
 
 [application]
 
-config/name="gdshader-partial-preview"
+config/name="godot-shader-previewer"
 run/main_scene="uid://lw1wu203q4w0"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/gdshader-partial-preview/plugin.cfg", "res://addons/shader-line-previewer/plugin.cfg", "res://addons/shaderlens/plugin.cfg")
+enabled=PackedStringArray("res://addons/gdshader-partial-preview/plugin.cfg", "res://addons/shader-line-previewer/plugin.cfg", "res://addons/shader-previewer/plugin.cfg", "res://addons/shaderlens/plugin.cfg")
 
 [physics]
 

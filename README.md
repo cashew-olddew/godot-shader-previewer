@@ -1,9 +1,9 @@
-# Shader Line Previewer
+# Godot Shader Previewer
 
 A real-time variable inspector and visual debugger for Godot shaders.
 Adds the visual shader node preview feature in the code editor.
 
-<video src="meta/preview.mp4" width="100%" controls autoplay loop muted></video>
+[![Addon Preview](https://raw.githubusercontent.com/cashew-olddew/godot-shader-previewer/main/meta/preview.mp4)](https://raw.githubusercontent.com/cashew-olddew/godot-shader-previewer/main/meta/preview.mp4)
 
 ## Features
 
@@ -16,7 +16,7 @@ Adds the visual shader node preview feature in the code editor.
 
 ## Usage Guide
 
-1. **Enable the Plugin**: Navigate to `Project Settings > Plugins` and enable **Shader Line Previewer**.
+1. **Enable the Plugin**: Navigate to `Project Settings > Plugins` and enable **Shader Previewer**.
 2. **Select an Active Node**: Select a node in your scene that is already using the shader you want to preview. This allows the plugin to copy your current uniform settings (like colors or textures).
 3. **Open the Shader**: Open the `.gdshader` file in the Godot Shader Editor.
 4. **Debug a Line**: Place your cursor on any line inside the `fragment()` function that assigns a value (e.g., `float mask = ...;`).
