@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dqbfkjhnnd8jn"
-path="res://.godot/imported/shader.svg-19f4947509bf5f6606d1cca9754bf516.ctex"
+path="res://.godot/imported/shader.svg-8a39f2d1a358f12e1969a4d48e4bd49b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/assets/shader.svg"
-dest_files=["res://.godot/imported/shader.svg-19f4947509bf5f6606d1cca9754bf516.ctex"]
+source_file="res://addons/shader-previewer/assets/shader.svg"
+dest_files=["res://.godot/imported/shader.svg-8a39f2d1a358f12e1969a4d48e4bd49b.ctex"]
 
 [params]
 
