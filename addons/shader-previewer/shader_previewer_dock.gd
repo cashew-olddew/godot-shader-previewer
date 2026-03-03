@@ -2,13 +2,89 @@
 extends TextureRect
 class_name ShaderLinePreviewerDock
 
-@onready var label = $Label
+const BUILTINS := {
+	[
+		"NORMAL_MAP_DEPTH",
+		"DEPTH",
+		"ALPHA",
+		"ALPHA_SCISSOR_THRESHOLD",
+		"ALPHA_HASH_SCALE",
+		"ALPHA_ANTIALIASING_EDGE",
+		"PREMUL_ALPHA_FACTOR",
+		"METALLIC",
+		"SPECULAR",
+		"ROUGHNESS",
+		"RIM",
+		"RIM_TINT",
+		"CLEARCOAT",
+		"CLEARCOAT_GLOSS",
+		"ANISOTROPY",
+		"SSS_STRENGTH",
+		"SSS_TRANSMITTANCE_DEPTH",
+		"SSS_TRANSMITTANCE_BOOST",
+		"AO",
+		"AO_LIGHT_AFFECT",
+	]: "float",
+
+	[
+		"VERTEX",
+		"SHADOW_VERTEX",
+		"ALPHA_TEXTURE_COORDINATE",
+		"ANISOTROPY_FLOW",
+	]: "vec2",
+
+	[
+		"NORMAL",
+		"NORMAL_MAP",
+		"LIGHT_VERTEX",
+		"TANGENT",
+		"BINORMAL",
+		"ALBEDO",
+		"BACKLIGHT",
+		"EMISSION",
+	]: "vec3",
+
+	[
+		"COLOR",
+		"FOG",
+		"RADIANCE",
+		"IRRADIANCE",
+		"SSS_TRANSMITTANCE_COLOR",
+	]: "vec4"
+}
+
+const SPATIAL_ASSIGNMENTS := {
+	"bool": "ALBEDO = vec3(float(%s)); ALPHA = 1.0;",
+	"int": "ALBEDO = vec3(float(%s)); ALPHA = 1.0;",
+	"float": "ALBEDO = vec3(%s); ALPHA = 1.0;",
+	"vec2": "ALBEDO = vec3(%s.rg, 0.0); ALPHA = 1.0;",
+	"vec3": "ALBEDO = %s; ALPHA = 1.0;",
+	"vec4": "vec4 __injected_outbound = %s; ALBEDO = __injected_outbound.rgb; ALPHA = __injected_outbound.a;"
+}
+
+const CANVAS_ASSIGNMENTS := {
+	"bool": "COLOR = vec4(vec3(float(%s)), 1.0);",
+	"int": "COLOR = vec4(vec3(float(%s)), 1.0);",
+	"float": "COLOR = vec4(vec3(%s), 1.0);",
+	"vec2": "COLOR = vec4(%s, 0.0, 1.0);",
+	"vec3": "COLOR = vec4(%s, 1.0);",
+	"vec4": "COLOR = %s;",
+}
+
+@export var viewport_texture: ViewportTexture
+@export var preview_mesh: MeshInstance3D
+@export var label: RichTextLabel
+@export var camera_3d: Camera3D
+
 
 var _initial_texture: Texture2D = null
+var _mode_3d := false:
+	set(v):
+		_mode_3d = v
 
 func _ready():
 	_initial_texture = texture
-	
+
 func _show_error(message: String) -> void:
 	label.text = message
 	material = null
@@ -30,7 +106,12 @@ func update_shader_preview(text: String, current_line_index: int, selected_mater
 		
 	_sync_material_parameters(selected_material, preview_material)
 
-	material = preview_material
+	if _mode_3d:
+		material = null
+		texture = viewport_texture
+		preview_mesh.set_surface_override_material(0, preview_material)
+	else:
+		material = preview_material
 	
 func update_texture(node: Node) -> void:
 	if node and "texture" in node and node.texture:
@@ -146,7 +227,21 @@ func _get_enclosing_function(lines: PackedStringArray, line_index: int) -> Strin
 				
 	return "" # Global scope
 
+func _get_shader_type(code: String) -> String:
+	var regex := RegEx.create_from_string(r"shader_type\s+(canvas_item|spatial)")
+	var result := regex.search(code)
+	return "error" if result == null else result.get_string(1)
+
 func _generate_preview_shader(original_code: String, line_index: int) -> String:
+	var shader_type := _get_shader_type(original_code)
+	if shader_type == "error":
+		_show_error("No [b]shader_type[/b] statement found on shader")
+		return original_code
+	if shader_type.is_empty():
+		_show_error("Preview only supports [b]canvas_item[/b] and [b]spatial[/b] shaders")
+		return original_code
+	_mode_3d = shader_type == "spatial"
+	
 	var lines = original_code.split("\n")
 	var enclosing_function = _get_enclosing_function(lines, line_index)
 	
@@ -175,17 +270,13 @@ func _generate_preview_shader(original_code: String, line_index: int) -> String:
 	
 	# Inject COLOR preview
 	var injection = ""
-	match type:
-		"bool":  injection = "COLOR = vec4(vec3(float(%s)), 1.0);" % var_name
-		"int":   injection = "COLOR = vec4(vec3(float(%s)), 1.0);" % var_name
-		"float": injection = "COLOR = vec4(vec3(%s), 1.0);" % var_name
-		"vec2":  injection = "COLOR = vec4(%s, 0.0, 1.0);" % var_name
-		"vec3":  injection = "COLOR = vec4(%s, 1.0);" % var_name
-		"vec4":  injection = "COLOR = %s;" % var_name
-		_: 
-			_show_error("Preview unavailable for current assignment.\nSupported types are: [b]bool, int, float, vec2, vec3, vec4[/b].")
-			return original_code
-		
+	var assignments: Dictionary = SPATIAL_ASSIGNMENTS if _mode_3d else CANVAS_ASSIGNMENTS
+	if not assignments.has(type):
+		_show_error("Preview unavailable for current assignment.\nSupported types are: [b]bool, int, float, vec2, vec3, vec4[/b].")
+		return original_code
+	
+	injection = assignments[type] % var_name
+	
 	truncated_lines.append(injection)
 	
 	# Close parantheses
@@ -216,14 +307,9 @@ func _find_var_type(var_name: String, full_code: String, line_index: int) -> Str
 		if m: 
 			return m.get_string(1)
 			
-	# Built-in Godot Shader Variables (CanvasItem & common Spatial)
-	if var_name in ["UV", "SCREEN_UV", "POINT_COORD"]: 
-		return "vec2"
-	if var_name in ["COLOR", "MODULATE"]: 
-		return "vec4"
-	if var_name in ["TIME", "PI", "TAU"]: 
-		return "float"
-	if var_name in ["VERTEX", "NORMAL"]: 
-		return "vec2" 
+	# Built-in Godot Shader Variables (CanvasItem & Spatial)
+	for builtin_collection: Array in BUILTINS.keys():
+		if var_name in builtin_collection:
+			return BUILTINS[builtin_collection]
 	
 	return ""
