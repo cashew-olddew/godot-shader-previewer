@@ -76,7 +76,6 @@ const CANVAS_ASSIGNMENTS := {
 @export var label: RichTextLabel
 @export var camera_3d: Camera3D
 
-
 var _initial_texture: Texture2D = null
 var _mode_3d := false:
 	set(v):

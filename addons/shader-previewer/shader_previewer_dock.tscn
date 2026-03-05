@@ -33,7 +33,6 @@ mouse_filter = 0
 mouse_force_pass_scroll_events = false
 texture = SubResource("GradientTexture1D_mm40d")
 expand_mode = 1
-stretch_mode = 4
 script = ExtResource("1_sc46u")
 viewport_texture = SubResource("ViewportTexture_qxnvq")
 preview_mesh = NodePath("SubViewport/MeshInstance3D")
