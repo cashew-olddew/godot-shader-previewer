@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://wi2scfv8ben5"]
+
+[ext_resource type="Script" uid="uid://ds0goy3jg2f0p" path="res://addons/shader-previewer/floating_preview_panel.gd" id="1_428md"]
+[ext_resource type="Texture2D" uid="uid://co6qb64dr8in0" path="res://addons/shader-previewer/assets/resize_handle.svg" id="2_hydqy"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ytjti"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.16078432, 0.16078432, 0.16078432, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2051175, 0.20511743, 0.20511743, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="FloatingPreviewPanel" type="Panel" unique_id=1807345632 node_paths=PackedStringArray("resize_handle", "dock_container")]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -160.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 6
+theme_override_styles/panel = SubResource("StyleBoxFlat_ytjti")
+script = ExtResource("1_428md")
+resize_handle = NodePath("RezizableHandle")
+dock_container = NodePath("MarginContainer/DockContainer")
+metadata/_edit_use_anchors_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=49339260]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="DockContainer" type="Control" parent="MarginContainer" unique_id=705665796]
+layout_mode = 2
+
+[node name="RezizableHandle" type="TextureRect" parent="." unique_id=377347513]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 12.0
+offset_right = 42.0
+offset_bottom = 44.0
+mouse_filter = 0
+mouse_default_cursor_shape = 12
+texture = ExtResource("2_hydqy")
+expand_mode = 3
