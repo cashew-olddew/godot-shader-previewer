@@ -137,7 +137,7 @@ func initialize_shader_code_edit() -> void:
 
 	_update_active_shader_editor()
 
-#region Auto Dock Expand/Collapse
+#region Auto Dock Expand/Collapse And Floating Preview
 func _initialize_bottom_panel_tab_bar(base_control : Control) -> void:
 	var bottom_panels = base_control.find_children("*", "EditorBottomPanel", true, false)
 	if bottom_panels.is_empty():
@@ -179,7 +179,6 @@ func get_shader_editor_mode() -> String:
 		return "unknown"
 
 func _on_tree_changed(_node: Node):
-	# Petit délai pour laisser le tree se stabiliser
 	await get_tree().process_frame
 	var mode = get_shader_editor_mode()
 	if mode == _current_mode:
