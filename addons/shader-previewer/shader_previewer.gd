@@ -6,7 +6,7 @@ var dock_scene: ShaderLinePreviewerDock = null
 var shader_code_editor: CodeEdit = null
 var code_editor_parent: TabContainer = null
 var selected_node: Node = null
-var bottom_panel_tab_bar : TabBar = null
+var bottom_panel : Node = null
 
 var _last_text: String = ""
 var _last_caret: int = -1
@@ -110,7 +110,6 @@ func initialize_shader_code_edit() -> void:
 	# Currently there's no public API for getting the Shader Editor,
 	# so I get the internal ShaderEditor class to find it.
 	var base_control = EditorInterface.get_base_control()
-	# --- Call the Auto Dock Expand/Collapse ---
 	_initialize_bottom_panel_tab_bar(base_control)
 	var shader_editors = base_control.find_children("*", "TextShaderEditor", true, false)
 	if shader_editors.size() == 0:
@@ -132,36 +131,33 @@ func initialize_shader_code_edit() -> void:
 
 #region Auto Dock Expand/Collapse
 func _initialize_bottom_panel_tab_bar(base_control : Control) -> void:
-	# --- Get the bottom panel ---
 	var bottom_panels = base_control.find_children("*", "EditorBottomPanel", true, false)
 	if bottom_panels.is_empty():
 		return # don't need to do the retry strategy because initialize_shader_code_edit already handles it
-	# --- Get the tab bar from the bottom panel ---
-	var bottom_panel = bottom_panels[0]
+	bottom_panel = bottom_panels[0]
 	var tab_bars = bottom_panel.find_children("*", "TabBar", false, false)
 	if tab_bars.is_empty():
 		return
-	bottom_panel_tab_bar = tab_bars[0] as TabBar
-	# shortcut name :
-	var tab_bar = bottom_panel_tab_bar
-
-	# --- Handles futures tab changed events ---
+	 
+	var tab_bar = tab_bars[0] as TabBar
 	if not tab_bar.tab_selected.is_connected(_on_bottom_tab_selected):
 		tab_bar.tab_selected.connect(_on_bottom_tab_selected)
 	
-	# --- Update based on the initial check ---
 	_on_bottom_tab_selected(tab_bar.current_tab)
 
 func _on_bottom_tab_selected(tab: int) -> void:
-	if not bottom_panel_tab_bar or not dock:
+	if not bottom_panel or not dock:
+		return
+	if tab == -1:
+		dock.close()
 		return
 	
-	var title = bottom_panel_tab_bar.get_tab_title(tab)
-	if title == "Shader Editor":
+	var current_tab = bottom_panel.get_child(tab)
+	if current_tab and current_tab.get_class() == "EditorDock" and "Shader" in current_tab.name:
 		dock.make_visible()
 	else:
 		dock.close()
-
+#endregion
 func _exit_tree():
 	remove_dock(dock)
 	if dock:
