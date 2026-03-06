@@ -32,9 +32,21 @@ https://github.com/user-attachments/assets/a2d11d94-5015-4043-a456-7bdf7684ee6a
 
 ## Contributing
 
+
 If you find any bugs or improvement ideas, feel free to [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo#about-forks) this repository and suggest a change.
 
 If you'd like to see an improvement, but don't know how to contribute, you can [create an Issue](https://github.com/cashew-olddew/godot-shader-line-previewer/issues/new).
+
+#### ⚠️ AI-assisted contributions ⚠️
+
+AI tools can be helpful, but please keep AI-generated code to a minimum. Large AI-generated changes can be difficult to review and may introduce subtle issues.
+If you use AI assistance when preparing a PR, please:
+
+- Clearly indicate which parts of the code were AI-generated.
+- Keep changes small and focused on a single issue.
+- Ensure the code has been reviewed and tested before submitting.
+
+Since reviews are currently handled by [a single maintainer](https://github.com/cashew-olddew/godot-shader-line-previewer/issues/new), keeping PRs concise greatly helps the review process.
 
 ## License
 
