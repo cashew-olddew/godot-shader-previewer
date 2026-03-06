@@ -6,10 +6,7 @@ var dock_scene: ShaderLinePreviewerDock = null
 var shader_code_editor: CodeEdit = null
 var code_editor_parent: TabContainer = null
 var selected_node: Node = null
-
-var bottom_panel : Node = null
-var _floating_preview: Control = null
-var _current_mode: String = ""
+var bottom_panel_tab_bar : TabBar = null
 
 var _last_text: String = ""
 var _last_caret: int = -1
@@ -43,11 +40,6 @@ func _enter_tree():
 	EditorInterface.get_selection().selection_changed.connect(_on_node_selection_changed)
 	# A node might already be selected when plugin enters tree
 	_on_node_selection_changed()
-	
-	var base = get_editor_interface().get_base_control()
-	base.child_entered_tree.connect(_on_tree_changed)
-	base.child_exiting_tree.connect(_on_tree_changed)
-	_on_tree_changed(base)
 
 func _process(delta):
 	if not shader_code_editor:
@@ -118,6 +110,7 @@ func initialize_shader_code_edit() -> void:
 	# Currently there's no public API for getting the Shader Editor,
 	# so I get the internal ShaderEditor class to find it.
 	var base_control = EditorInterface.get_base_control()
+	# --- Call the Auto Dock Expand/Collapse ---
 	_initialize_bottom_panel_tab_bar(base_control)
 	var shader_editors = base_control.find_children("*", "TextShaderEditor", true, false)
 	if shader_editors.size() == 0:
@@ -137,91 +130,37 @@ func initialize_shader_code_edit() -> void:
 
 	_update_active_shader_editor()
 
-#region Auto Dock Expand/Collapse And Floating Preview
+#region Auto Dock Expand/Collapse
 func _initialize_bottom_panel_tab_bar(base_control : Control) -> void:
+	# --- Get the bottom panel ---
 	var bottom_panels = base_control.find_children("*", "EditorBottomPanel", true, false)
 	if bottom_panels.is_empty():
 		return # don't need to do the retry strategy because initialize_shader_code_edit already handles it
-
-	bottom_panel = bottom_panels[0]
+	# --- Get the tab bar from the bottom panel ---
+	var bottom_panel = bottom_panels[0]
 	var tab_bars = bottom_panel.find_children("*", "TabBar", false, false)
 	if tab_bars.is_empty():
 		return
-	var tab_bar = tab_bars[0] as TabBar
-	
+	bottom_panel_tab_bar = tab_bars[0] as TabBar
+	# shortcut name :
+	var tab_bar = bottom_panel_tab_bar
+
+	# --- Handles futures tab changed events ---
 	if not tab_bar.tab_selected.is_connected(_on_bottom_tab_selected):
 		tab_bar.tab_selected.connect(_on_bottom_tab_selected)
 	
+	# --- Update based on the initial check ---
 	_on_bottom_tab_selected(tab_bar.current_tab)
 
 func _on_bottom_tab_selected(tab: int) -> void:
-	if not bottom_panel or not dock:
+	if not bottom_panel_tab_bar or not dock:
 		return
-	var current_tab = bottom_panel.get_child(tab)
-	if current_tab and current_tab.get_class() == "EditorDock" and "Shader" in current_tab.name:
+	
+	var title = bottom_panel_tab_bar.get_tab_title(tab)
+	if title == "Shader Editor":
 		dock.make_visible()
 	else:
 		dock.close()
-
-func get_shader_editor_mode() -> String:
-	var base = get_editor_interface().get_base_control()
-	var editors = base.find_children("Shader Editor", "", true, false)
-	if editors.is_empty():
-		return "not_found"
-	
-	var path = str(editors[0].get_path())
-	
-	if "WindowWrapper" in path:
-		return "floating"
-	elif "EditorBottomPanel" in path:
-		return "docked"
-	else:
-		return "unknown"
-
-func _on_tree_changed(_node: Node):
-	await get_tree().process_frame
-	var mode = get_shader_editor_mode()
-	if mode == _current_mode:
-		return
-	_current_mode = mode
-	_apply_mode(mode)
-	print("Shader editor mode: ", mode)
-
-func _apply_mode(mode: String) -> void:
-	match mode:
-		"floating":
-			dock.close()
-			_inject_floating_preview()
-		"docked":
-			_remove_floating_preview()
-		_:
-			dock.close()
-			_remove_floating_preview()
-
-func _inject_floating_preview() -> void:
-	_remove_floating_preview()
-
-	var base = get_editor_interface().get_base_control()
-	var editors = base.find_children("*", "TextShaderEditor", true, false)
-	if editors.is_empty():
-		return
-	var code_edits = editors[0].find_children("*", "CodeEdit", true, false)
-	if code_edits.is_empty():
-		return
-	var code_edit = code_edits[0]
-	
-	code_edit.clip_contents = true
-
-	_floating_preview = preload("res://addons/shader-previewer/shader_previewer_floating.tscn").instantiate()
-	_floating_preview.inject_dock(dock_scene)
-	code_edit.add_child(_floating_preview)
-
-func _remove_floating_preview() -> void:
-	if _floating_preview and is_instance_valid(_floating_preview):
-		_floating_preview.eject_dock(dock_scene, dock)
-		_floating_preview.queue_free()
-	_floating_preview = null
-#endregion
 
 func _exit_tree():
 	remove_dock(dock)
