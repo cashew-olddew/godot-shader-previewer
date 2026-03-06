@@ -7,6 +7,8 @@ var shader_code_editor: CodeEdit = null
 var code_editor_parent: TabContainer = null
 var selected_node: Node = null
 
+var _is_floating: bool = false
+
 var _last_text: String = ""
 var _last_caret: int = -1
 var _last_material_params: Dictionary = {}
@@ -16,17 +18,26 @@ var _last_material_params: Dictionary = {}
 var _try_load_timer: Timer = null
 var _load_tries_left: int = 60 # Try for 2 minutes (60 times. One try takes 2 seconds.)
 
+var icon_tex = preload("res://addons/shader-previewer/assets/shader.svg")
+
 func _enter_tree():
 	dock_scene = preload("res://addons/shader-previewer/shader_previewer_dock.tscn").instantiate()
-	# Add new dock
-	var icon_tex = preload("res://addons/shader-previewer/assets/shader.svg")
+	dock_scene.floating_requested.connect(_on_floating_requested)
 	
+	# Floating by default
+	#_is_floating = true
+	#dock_scene.set_floating_mode(true)
+	
+	# Dock by default
 	dock = EditorDock.new()
-	dock.add_child(dock_scene)
 	dock.title = "Shader Preview"
 	dock.dock_icon = icon_tex
 	dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BL
 	add_dock(dock)
+	
+	dock.add_child(dock_scene)
+	
+	dock_scene.set_floating_mode(_is_floating)
 	
 	_try_load_timer = Timer.new()
 	add_child(_try_load_timer)
@@ -117,7 +128,26 @@ func _update_active_shader_editor() -> void:
 			
 		var ce = code_edits[0]
 		if shader_code_editor != ce:
+			if shader_code_editor:
+				shader_code_editor.resized.disconnect(_on_shader_editor_resize)
+			
 			shader_code_editor = ce
+			shader_code_editor.resized.connect(_on_shader_editor_resize)
+			
+			if not _is_floating: return
+			
+			if dock_scene.get_parent() == null:
+				shader_code_editor.add_child(dock_scene)
+			else:
+				dock_scene.reparent(shader_code_editor)
+			
+			dock_scene.set_floating_mode(true)
+			dock_scene.show()
+
+func _on_shader_editor_resize() -> void:
+	if not _is_floating: return
+	
+	dock_scene.resize_to_editor_shape(shader_code_editor)
 
 func update_shader_editor_reference(_tab: int) -> void:
 	if not code_editor_parent:
@@ -146,10 +176,41 @@ func initialize_shader_code_edit() -> void:
 
 	_update_active_shader_editor()
 
+func _on_floating_requested() -> void:
+	var new_parent: Node
+	if not _is_floating:
+		if shader_code_editor:
+			new_parent = shader_code_editor
+		else:
+			new_parent = get_editor_interface().get_base_control()
+			dock_scene.hide()
+	
+	else:
+		dock = EditorDock.new()
+		dock.title = "Shader Preview"
+		dock.dock_icon = icon_tex
+		dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BL
+		add_dock(dock)
+		new_parent = dock
+	
+	if dock_scene.get_parent():
+		dock_scene.reparent(new_parent)
+	else:
+		new_parent.add_child(dock_scene)
+	
+	_is_floating = not _is_floating
+	
+	if _is_floating and dock:
+		remove_dock(dock)
+		dock.queue_free()
+		dock = null
+	
+	dock_scene.set_floating_mode(_is_floating)
+
 func _exit_tree():
-	remove_dock(dock)
+	dock_scene.queue_free()
 	if dock:
+		remove_dock(dock)
 		dock.queue_free()
 	if _try_load_timer:
 		_try_load_timer.queue_free()
-	
