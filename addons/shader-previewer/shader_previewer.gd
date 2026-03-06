@@ -6,7 +6,10 @@ var dock_scene: ShaderLinePreviewerDock = null
 var shader_code_editor: CodeEdit = null
 var code_editor_parent: TabContainer = null
 var selected_node: Node = null
+
 var bottom_panel : Node = null
+var _floating_preview: Control = null
+var _current_mode: String = ""
 
 var _last_text: String = ""
 var _last_caret: int = -1
@@ -40,6 +43,11 @@ func _enter_tree():
 	EditorInterface.get_selection().selection_changed.connect(_on_node_selection_changed)
 	# A node might already be selected when plugin enters tree
 	_on_node_selection_changed()
+	
+	var base = get_editor_interface().get_base_control()
+	base.child_entered_tree.connect(_on_tree_changed)
+	base.child_exiting_tree.connect(_on_tree_changed)
+	_on_tree_changed(base)
 
 func _process(delta):
 	if not shader_code_editor:
@@ -154,6 +162,66 @@ func _on_bottom_tab_selected(tab: int) -> void:
 		dock.make_visible()
 	else:
 		dock.close()
+
+func get_shader_editor_mode() -> String:
+	var base = get_editor_interface().get_base_control()
+	var editors = base.find_children("Shader Editor", "", true, false)
+	if editors.is_empty():
+		return "not_found"
+	
+	var path = str(editors[0].get_path())
+	
+	if "WindowWrapper" in path:
+		return "floating"
+	elif "EditorBottomPanel" in path:
+		return "docked"
+	else:
+		return "unknown"
+
+func _on_tree_changed(_node: Node):
+	# Petit délai pour laisser le tree se stabiliser
+	await get_tree().process_frame
+	var mode = get_shader_editor_mode()
+	if mode == _current_mode:
+		return
+	_current_mode = mode
+	_apply_mode(mode)
+	print("Shader editor mode: ", mode)
+
+func _apply_mode(mode: String) -> void:
+	match mode:
+		"floating":
+			dock.close()
+			_inject_floating_preview()
+		"docked":
+			_remove_floating_preview()
+		_:
+			dock.close()
+			_remove_floating_preview()
+
+func _inject_floating_preview() -> void:
+	_remove_floating_preview()
+
+	var base = get_editor_interface().get_base_control()
+	var editors = base.find_children("*", "TextShaderEditor", true, false)
+	if editors.is_empty():
+		return
+	var code_edits = editors[0].find_children("*", "CodeEdit", true, false)
+	if code_edits.is_empty():
+		return
+	var code_edit = code_edits[0]
+	
+	code_edit.clip_contents = true
+
+	_floating_preview = preload("res://addons/shader-previewer/shader_previewer_floating.tscn").instantiate()
+	_floating_preview.inject_dock(dock_scene)
+	code_edit.add_child(_floating_preview)
+
+func _remove_floating_preview() -> void:
+	if _floating_preview and is_instance_valid(_floating_preview):
+		_floating_preview.eject_dock(dock_scene, dock)
+		_floating_preview.queue_free()
+	_floating_preview = null
 #endregion
 
 func _exit_tree():
