@@ -6,7 +6,10 @@ var dock_scene: ShaderLinePreviewerDock = null
 var shader_code_editor: CodeEdit = null
 var code_editor_parent: TabContainer = null
 var selected_node: Node = null
+
 var bottom_panel : Node = null
+var _floating_preview: Control = null
+var _current_mode: String = ""
 
 var _last_text: String = ""
 var _last_caret: int = -1
@@ -40,6 +43,11 @@ func _enter_tree():
 	EditorInterface.get_selection().selection_changed.connect(_on_node_selection_changed)
 	# A node might already be selected when plugin enters tree
 	_on_node_selection_changed()
+	
+	var base = get_editor_interface().get_base_control()
+	base.child_entered_tree.connect(_on_tree_changed)
+	base.child_exiting_tree.connect(_on_tree_changed)
+	_on_tree_changed(base)
 
 func _process(delta):
 	if not shader_code_editor:
@@ -148,17 +156,18 @@ func initialize_shader_code_edit() -> void:
 
 	_update_active_shader_editor()
 
-#region Auto Dock Expand/Collapse
+#region Auto Dock Expand/Collapse And Floating Preview
 func _initialize_bottom_panel_tab_bar(base_control : Control) -> void:
 	var bottom_panels = base_control.find_children("*", "EditorBottomPanel", true, false)
 	if bottom_panels.is_empty():
 		return # don't need to do the retry strategy because initialize_shader_code_edit already handles it
+
 	bottom_panel = bottom_panels[0]
 	var tab_bars = bottom_panel.find_children("*", "TabBar", false, false)
 	if tab_bars.is_empty():
 		return
-	 
 	var tab_bar = tab_bars[0] as TabBar
+	
 	if not tab_bar.tab_selected.is_connected(_on_bottom_tab_selected):
 		tab_bar.tab_selected.connect(_on_bottom_tab_selected)
 	
@@ -176,8 +185,6 @@ func _on_bottom_tab_selected(tab: int) -> void:
 		dock.make_visible()
 	else:
 		dock.close()
-<<<<<<< HEAD
-=======
 
 func get_shader_editor_mode() -> String:
 	var base = get_editor_interface().get_base_control()
@@ -237,8 +244,8 @@ func _remove_floating_preview() -> void:
 		_floating_preview.eject_dock(dock_scene, dock)
 		_floating_preview.queue_free()
 	_floating_preview = null
->>>>>>> 57659e6 (Adding dynamic floating window based on the shader editor state (docked or floating) with features like resize and drag the preview window)
 #endregion
+
 func _exit_tree():
 	remove_dock(dock)
 	if dock:
