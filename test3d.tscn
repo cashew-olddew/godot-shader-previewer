@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://dq06uwy7b3ncp"]
+
+[ext_resource type="Shader" uid="uid://bv0wd2s3x7c6v" path="res://test3d.gdshader" id="1_vf330"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wcuis"]
+render_priority = 0
+shader = ExtResource("1_vf330")
+shader_parameter/fresnel_color = Color(0.4748611, 0.7195294, 3.85046e-07, 1)
+shader_parameter/fresnel_intensity = 3.8670001836825
+shader_parameter/fresnel_power = 2.06800007448
+
+[sub_resource type="SphereMesh" id="SphereMesh_vf330"]
+
+[node name="test3D" type="Node3D" unique_id=993826741]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=583347813]
+material_override = SubResource("ShaderMaterial_wcuis")
+mesh = SubResource("SphereMesh_vf330")

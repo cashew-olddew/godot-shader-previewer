@@ -58,10 +58,29 @@ func _process(delta):
 	_last_material_params = current_params
 	_on_preview_try()
 
+func _get_selected_node_surface_material() -> ShaderMaterial:
+	if not "mesh" in selected_node:
+		return null
+	
+	var surface_count: int = selected_node.mesh.get_surface_count()
+	
+	var shader: Shader = Shader.new()
+	shader.code = shader_code_editor.text
+	var code_uniforms := shader.get_shader_uniform_list()
+	
+	for i in surface_count:
+		var surface_material := selected_node.get_active_material(i) as ShaderMaterial
+		if not surface_material:
+			continue
+		var surface_uniforms := surface_material.shader.get_shader_uniform_list()
+		if surface_uniforms == code_uniforms:
+			return surface_material
+	return null
+
 func _snapshot_material_params() -> Dictionary:
-	if not selected_node or not "material" in selected_node:
+	if not selected_node or (not "material" in selected_node and not selected_node.has_method("get_active_material")):
 		return {}
-	var mat = selected_node.material as ShaderMaterial
+	var mat = selected_node.material as ShaderMaterial if "material" in selected_node else _get_selected_node_surface_material()
 	if not mat or not mat.shader:
 		return {}
 	var result := {}
@@ -74,8 +93,8 @@ func _on_preview_try() -> void:
 	var caret_line_index = shader_code_editor.get_caret_line()
 	var shader_text: String = shader_code_editor.text
 	var selected_material = null
-	if selected_node and "material" in selected_node:
-		selected_material = selected_node.material as ShaderMaterial
+	if selected_node and ("material" in selected_node or selected_node.has_method("get_active_material")):
+		selected_material = (selected_node.material if "material" in selected_node else _get_selected_node_surface_material()) as ShaderMaterial
 	dock_scene.update_shader_preview(shader_text, caret_line_index, selected_material)
 
 func _on_node_selection_changed() -> void:
