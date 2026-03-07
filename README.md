@@ -11,7 +11,8 @@ https://github.com/user-attachments/assets/a2d11d94-5015-4043-a456-7bdf7684ee6a
 - **Live Uniform Sync** - Automatically detects and mirrors the uniform values from the selected node in your scene.
 - **Different datatype support** - Supports `bool`, `int`, `float`, `vec2`, `vec3`, and `vec4` for immediate visual feedback in the editor.
 - **Multiline support** - Works even if the selected assignment is on multiple lines
-
+- **Spatial Shader support** - Feature added by [Razoric480](https://github.com/Razoric480)
+- **Dock and Floating Window views** - Feature added by [TheMagnat](https://github.com/TheMagnat)
 ---
 
 ## Usage Guide
@@ -22,6 +23,10 @@ https://github.com/user-attachments/assets/a2d11d94-5015-4043-a456-7bdf7684ee6a
 4. **Debug a Line**: Place your cursor on any line inside the `fragment()` function that assigns a value (e.g., `float mask = ...;`).
 5. **Observe Results**: The **Shader Preview** dock will show the visual state of that variable at that exact point in the code execution.
 
+#### Dock buttons
+- **Floating Button** - Swaps between floating and dock preview mode
+- **Move View Button** - Moves around the preview window while in floating mode
+- **Resize View Button** - Resizes the preview window while in floating mode
 ---
 
 ## Known Issues
