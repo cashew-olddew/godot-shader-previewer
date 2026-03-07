@@ -51,7 +51,7 @@ If you use AI assistance when preparing a PR, please:
 - Keep changes small and focused on a single issue.
 - Ensure the code has been reviewed and tested before submitting.
 
-Since reviews are currently handled by [a single maintainer](https://github.com/cashew-olddew/godot-shader-line-previewer/issues/new), keeping PRs concise greatly helps the review process.
+Since reviews are currently handled by [a single maintainer](https://github.com/cashew-olddew), keeping PRs concise greatly helps the review process.
 
 ## License
 
