@@ -129,7 +129,18 @@ func set_floating_mode(floating: bool) -> void:
 		resize_view_button.show()
 		move_view_button.show()
 		size = _last_floating_panel_size
+		sub_viewport.size = _last_floating_panel_size
 		set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_KEEP_SIZE, 20)
+		
+		# Note: These 2 await allow us to wait for the code editor to get its true size
+		#       and prevent wrong positioning due to local cords. If a better way to find
+		#       if the CodeEditor finished positioning in the layers can be found it replace
+		#       this fix
+		await get_tree().process_frame
+		await get_tree().process_frame
+		
+		if _last_floating_panel_pos.x >= 0.0:
+			position = _last_floating_panel_pos
 		
 		# This prevent the preview to keep a now outside old size/pos
 		if current_shader_code_editor: resize_to_editor_shape()
@@ -159,6 +170,7 @@ var _initial_panel_size: Vector2
 var _initial_panel_position: Vector2
 
 var _last_floating_panel_size: Vector2
+var _last_floating_panel_pos := Vector2(-1, -1)
 
 func _resize_button_down() -> void:
 	if not _is_floating: return
@@ -221,6 +233,7 @@ func _gui_input(event: InputEvent) -> void:
 		position = _initial_panel_position - (resized_size - _initial_panel_size)
 		
 		_last_floating_panel_size = size
+		_last_floating_panel_pos = position
 	
 	elif _in_move:
 		var moved_pos: Vector2 = _initial_panel_position - delta_mouse_position
@@ -229,6 +242,8 @@ func _gui_input(event: InputEvent) -> void:
 			moved_pos = moved_pos.clamp(Vector2.ZERO, _get_current_max_pos())
 		
 		position = moved_pos
+		
+		_last_floating_panel_pos = position
 
 func _get_current_max_size() -> Vector2:
 	return current_shader_code_editor.size - Vector2(
@@ -252,11 +267,12 @@ func resize_to_editor_shape() -> void:
 		pass
 	
 	var new_size: Vector2 = size.clamp(MIN_SIZE, max_size)
+	if size != new_size:
+		sub_viewport.size = new_size
+		size = new_size
 	
-	size = new_size
-	position = position.max(Vector2.ZERO)
-	
-	_last_floating_panel_size = size
+	var max_pos: Vector2 = _get_current_max_pos()
+	position = position.clamp(Vector2.ZERO, max_pos)
 #endregion
 
 #region Shader Preview Core
