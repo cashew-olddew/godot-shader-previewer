@@ -103,11 +103,11 @@ func _ready():
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	
-	resize_view_button.button_down.connect(_resize_button_down)
-	resize_view_button.button_up.connect(_resize_button_up)
+	resize_view_button.button_down.connect(_on_resize_button_down)
+	resize_view_button.button_up.connect(_on_resize_button_up)
 	
-	move_view_button.button_down.connect(_move_button_down)
-	move_view_button.button_up.connect(_move_button_up)
+	move_view_button.button_down.connect(_on_move_button_down)
+	move_view_button.button_up.connect(_on_move_button_up)
 	
 	floating_button.pressed.connect(func(): floating_requested.emit())
 	
@@ -172,7 +172,7 @@ var _initial_panel_position: Vector2
 var _last_floating_panel_size: Vector2
 var _last_floating_panel_pos := Vector2(-1, -1)
 
-func _resize_button_down() -> void:
+func _on_resize_button_down() -> void:
 	if not _is_floating: return
 	
 	_in_resize = true
@@ -180,21 +180,21 @@ func _resize_button_down() -> void:
 	_initial_panel_size = size
 	_initial_panel_position = position
 
-func _resize_button_up() -> void:
+func _on_resize_button_up() -> void:
 	if not _is_floating: return
 	_in_resize = false
 	if _should_hide_buttons:
 		top_button_container.hide()
 		_should_hide_buttons = false
 
-func _move_button_down() -> void:
+func _on_move_button_down() -> void:
 	if not _is_floating: return
 	
 	_in_move = true
 	_initial_mouse_position = get_global_mouse_position()
 	_initial_panel_position = position
 
-func _move_button_up() -> void:
+func _on_move_button_up() -> void:
 	if not _is_floating: return
 	
 	_in_move = false

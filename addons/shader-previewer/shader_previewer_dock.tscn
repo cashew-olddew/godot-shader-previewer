@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://og7fsd8c7hlv" path="res://addons/shader-previewer/shader_previewer_dock.gd" id="1_sc46u"]
 [ext_resource type="Texture2D" uid="uid://u8p1bbn401ig" path="res://addons/shader-previewer/assets/GuiResizerTopLeft.svg" id="2_08suc"]
+[ext_resource type="Shader" uid="uid://cbunay5xay0ut" path="res://addons/shader-previewer/previewer_negative_buttons.gdshader" id="2_bousf"]
 [ext_resource type="Texture2D" uid="uid://38iko1nxy5gh" path="res://addons/shader-previewer/assets/ToolMove.svg" id="3_bousf"]
 [ext_resource type="Texture2D" uid="uid://c0kmyu0q8wt33" path="res://addons/shader-previewer/assets/MakeFloating.svg" id="4_0v2jv"]
 
@@ -29,23 +30,8 @@ colors = PackedColorArray(0.161, 0.161, 0.161, 1)
 gradient = SubResource("Gradient_n82db")
 width = 1
 
-[sub_resource type="Shader" id="Shader_08suc"]
-code = "shader_type canvas_item;
-uniform sampler2D screen_texture : hint_screen_texture;
-
-void fragment() {
-	vec4 original_color = COLOR;
-	vec3 background = texture(screen_texture, SCREEN_UV).rgb;
-	
-	// Note: constrast between 0.3 and 1.0 to prevent white background to remove nuance in icons
-	vec3 contrast = clamp(vec3(1.0) - background, 0.3, 1.0);;
-	
-	COLOR.rgb = original_color.rgb * contrast;
-}
-"
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bousf"]
-shader = SubResource("Shader_08suc")
+shader = ExtResource("2_bousf")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g1wsc"]
 content_margin_left = 4.0
