@@ -198,9 +198,6 @@ func _on_visual_node_selected(node: GraphNode) -> void:
 	# the code is only updated when the preview text is viewed; so we have to force it
 	visual_shader_editor.get_meta("code_editor").text = _get_selected_node_surface_material().shader.code
 
-func _update_visual_code() -> void:
-	pass
-
 func _on_dock_resized() -> void:
 	dock_scene.sub_viewport.size = dock.size
 
