@@ -153,7 +153,7 @@ func _update_active_shader_editor() -> void:
 	var current_tab_index = code_editor_parent.current_tab
 	var active_editor = code_editor_parent.get_tab_control(current_tab_index)
 
-	if not active_editor:
+	if not active_editor or not active_editor.get_class().contains("ShaderEditor"):
 		return
 	var as_visual := active_editor.get_class() == "VisualShaderEditor"
 	var code_edits = active_editor.find_children("*", "CodeEdit", true, false)
