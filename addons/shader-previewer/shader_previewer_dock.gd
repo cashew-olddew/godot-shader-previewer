@@ -445,6 +445,11 @@ func _get_shader_type(code: String) -> String:
 func _generate_preview_shader(original_code: String, line_index: int) -> Dictionary:
 	var result: Dictionary = {"success": false, "generated_code": ""}
 	
+	if line_index == -2:
+		result.success = true
+		result.generated_code = original_code
+		return result
+	
 	var shader_type := _get_shader_type(original_code)
 	if shader_type == "error":
 		_show_error("No [b]shader_type[/b] statement found on shader")

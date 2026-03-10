@@ -64,6 +64,12 @@ func _get_current_caret_line() -> int:
 		for i in lines.size():
 			if lines[i].contains("n_out%sp0 = " % [selected_visual_node_id]):
 				return i
+		for i in lines.size():
+			for keys in ShaderLinePreviewerDock.BUILTINS:
+				for key in keys:
+					if lines[i].contains("%s = " % [key]):
+						# special line number for "just use original shader"
+						return -2
 	return -1
 
 func _process(delta):

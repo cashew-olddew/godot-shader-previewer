@@ -1,5 +1,8 @@
 [gd_resource type="VisualShader" format=3 uid="uid://hwhoafwsm8p4"]
 
+[sub_resource type="VisualShaderNodeFloatConstant" id="VisualShaderNodeFloatConstant_wkdua"]
+constant = 0.5
+
 [sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_267ya"]
 input_name = "normal"
 
@@ -45,4 +48,6 @@ nodes/fragment/8/node = SubResource("VisualShaderNodeInput_tgjg7")
 nodes/fragment/8/position = Vector2(-540, -80)
 nodes/fragment/9/node = SubResource("VisualShaderNodeVectorOp_002yg")
 nodes/fragment/9/position = Vector2(340, 100)
-nodes/fragment/connections = PackedInt32Array(2, 0, 4, 0, 3, 0, 4, 1, 4, 0, 6, 1, 5, 0, 6, 0, 7, 0, 4, 3, 8, 0, 9, 0, 6, 0, 9, 1, 9, 0, 0, 0)
+nodes/fragment/10/node = SubResource("VisualShaderNodeFloatConstant_wkdua")
+nodes/fragment/10/position = Vector2(335.49792, 394.72726)
+nodes/fragment/connections = PackedInt32Array(2, 0, 4, 0, 3, 0, 4, 1, 4, 0, 6, 1, 5, 0, 6, 0, 7, 0, 4, 3, 8, 0, 9, 0, 6, 0, 9, 1, 9, 0, 0, 0, 10, 0, 0, 1)
