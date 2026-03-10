@@ -1,0 +1,48 @@
+[gd_resource type="VisualShader" format=3 uid="uid://hwhoafwsm8p4"]
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_267ya"]
+input_name = "normal"
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_riuid"]
+input_name = "view"
+
+[sub_resource type="VisualShaderNodeFresnel" id="VisualShaderNodeFresnel_tgjg7"]
+default_input_values = [2, false, 3, 3.0]
+
+[sub_resource type="VisualShaderNodeColorParameter" id="VisualShaderNodeColorParameter_267ya"]
+parameter_name = "fresnel_color"
+default_value_enabled = true
+default_value = Color(1, 0, 0, 1)
+
+[sub_resource type="VisualShaderNodeVectorOp" id="VisualShaderNodeVectorOp_riuid"]
+operator = 2
+
+[sub_resource type="VisualShaderNodeFloatParameter" id="VisualShaderNodeFloatParameter_267ya"]
+parameter_name = "fresnel_power"
+default_value_enabled = true
+default_value = 3.0
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_tgjg7"]
+input_name = "uv"
+
+[sub_resource type="VisualShaderNodeVectorOp" id="VisualShaderNodeVectorOp_002yg"]
+
+[resource]
+nodes/fragment/0/position = Vector2(680, 60)
+nodes/fragment/2/node = SubResource("VisualShaderNodeInput_267ya")
+nodes/fragment/2/position = Vector2(-760, 120)
+nodes/fragment/3/node = SubResource("VisualShaderNodeInput_riuid")
+nodes/fragment/3/position = Vector2(-780, 360)
+nodes/fragment/4/node = SubResource("VisualShaderNodeFresnel_tgjg7")
+nodes/fragment/4/position = Vector2(-260, 400)
+nodes/fragment/5/node = SubResource("VisualShaderNodeColorParameter_267ya")
+nodes/fragment/5/position = Vector2(-320, 100)
+nodes/fragment/6/node = SubResource("VisualShaderNodeVectorOp_riuid")
+nodes/fragment/6/position = Vector2(40, 200)
+nodes/fragment/7/node = SubResource("VisualShaderNodeFloatParameter_267ya")
+nodes/fragment/7/position = Vector2(-703.9384, 573.418)
+nodes/fragment/8/node = SubResource("VisualShaderNodeInput_tgjg7")
+nodes/fragment/8/position = Vector2(-540, -80)
+nodes/fragment/9/node = SubResource("VisualShaderNodeVectorOp_002yg")
+nodes/fragment/9/position = Vector2(340, 100)
+nodes/fragment/connections = PackedInt32Array(2, 0, 4, 0, 3, 0, 4, 1, 4, 0, 6, 1, 5, 0, 6, 0, 7, 0, 4, 3, 8, 0, 9, 0, 6, 0, 9, 1, 9, 0, 0, 0)

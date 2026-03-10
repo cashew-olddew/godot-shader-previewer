@@ -4,8 +4,10 @@ extends EditorPlugin
 var dock: EditorDock = null
 var dock_scene: ShaderLinePreviewerDock = null
 var shader_code_editor: CodeEdit = null
+var visual_shader_editor: GraphEdit = null
 var code_editor_parent: TabContainer = null
 var selected_node: Node = null
+var selected_visual_node_id := ""
 
 var _is_floating: bool = false
 
@@ -46,12 +48,30 @@ func _enter_tree():
 	# A node might already be selected when plugin enters tree
 	_on_node_selection_changed()
 
+func _get_current_text() -> String:
+	if shader_code_editor:
+		return shader_code_editor.text
+	if visual_shader_editor:
+		return visual_shader_editor.get_meta("code_editor").text
+	return ""
+
+func _get_current_caret_line() -> int:
+	if shader_code_editor:
+		return shader_code_editor.get_caret_line()
+	if visual_shader_editor and selected_visual_node_id:
+		var text := _get_current_text()
+		var lines := text.split("\n")
+		for i in lines.size():
+			if lines[i].contains("n_out%sp0 = " % [selected_visual_node_id]):
+				return i
+	return -1
+
 func _process(delta):
-	if not shader_code_editor:
+	if not shader_code_editor and not visual_shader_editor:
 		return
 		
-	var current_text = shader_code_editor.text
-	var current_caret = shader_code_editor.get_caret_line()
+	var current_text = _get_current_text()
+	var current_caret = _get_current_caret_line()
 	var current_params = _snapshot_material_params()
 	
 	# Only update when something actually changed
@@ -81,7 +101,7 @@ func _get_selected_node_surface_material() -> ShaderMaterial:
 	var surface_count: int = selected_node.mesh.get_surface_count()
 	
 	var shader: Shader = Shader.new()
-	shader.code = shader_code_editor.text
+	shader.code = _get_current_text()
 	var code_uniforms := shader.get_shader_uniform_list()
 	
 	for i in surface_count:
@@ -106,8 +126,8 @@ func _snapshot_material_params() -> Dictionary:
 	return result
 	
 func _on_preview_try() -> void:
-	var caret_line_index = shader_code_editor.get_caret_line()
-	var shader_text: String = shader_code_editor.text
+	var caret_line_index = _get_current_caret_line()
+	var shader_text: String = _get_current_text()
 	var selected_material = null
 	if selected_node and ("material" in selected_node or selected_node.has_method("get_active_material")):
 		selected_material = (selected_node.material if "material" in selected_node else _get_selected_node_surface_material()) as ShaderMaterial
@@ -127,35 +147,59 @@ func _update_active_shader_editor() -> void:
 	var current_tab_index = code_editor_parent.current_tab
 	var active_editor = code_editor_parent.get_tab_control(current_tab_index)
 
-	if active_editor and active_editor.get_class() == "TextShaderEditor":
-		var code_edits = active_editor.find_children("*", "CodeEdit", true, false)
-		if code_edits.is_empty():
-			return
-			
-		var ce = code_edits[0]
-		if shader_code_editor != ce:
-			if shader_code_editor:
-				shader_code_editor.resized.disconnect(_on_shader_editor_resize)
-			
-			shader_code_editor = ce
-			shader_code_editor.resized.connect(_on_shader_editor_resize)
-			
-			dock_scene.current_shader_code_editor = shader_code_editor
-			
-			if not _is_floating: return
-			
-			if dock_scene.get_parent() == null:
-				shader_code_editor.add_child(dock_scene)
-			else:
-				dock_scene.reparent(shader_code_editor)
-			
-			dock_scene.set_floating_mode(true)
-			dock_scene.show()
+	if not active_editor:
+		return
+	var as_visual := active_editor.get_class() == "VisualShaderEditor"
+	var code_edits = active_editor.find_children("*", "CodeEdit", true, false)
+	if code_edits.is_empty():
+		return
+		
+	var ce = code_edits[0]
+	var target_control = ce
+	var target_control_local = shader_code_editor
+	if as_visual:
+		target_control = code_editor_parent.find_children("*", "GraphEdit", true, false)[0]
+		target_control_local = visual_shader_editor
+		target_control.set_meta("code_editor", ce)
+	if target_control_local != target_control:
+		if target_control_local:
+			target_control_local.resized.disconnect(_on_shader_editor_resize)
+		
+		if as_visual:
+			shader_code_editor = null
+			visual_shader_editor = target_control
+			visual_shader_editor.node_selected.connect(_on_visual_node_selected)
+		else:
+			shader_code_editor = target_control
+			visual_shader_editor = null
+		
+		target_control.resized.connect(_on_shader_editor_resize)
+		
+		dock_scene.current_shader_code_editor = shader_code_editor
+		dock_scene.current_visual_shader_editor = visual_shader_editor
+		
+		if not _is_floating: return
+		
+		if dock_scene.get_parent() == null:
+			shader_code_editor.add_child(dock_scene)
+		else:
+			dock_scene.reparent(target_control)
+		
+		dock_scene.set_floating_mode(true)
+		dock_scene.show()
 
 func _on_shader_editor_resize() -> void:
 	if not _is_floating: return
 	
 	dock_scene.resize_to_editor_shape()
+
+func _on_visual_node_selected(node: GraphNode) -> void:
+	selected_visual_node_id = node.name
+	# the code is only updated when the preview text is viewed; so we have to force it
+	visual_shader_editor.get_meta("code_editor").text = _get_selected_node_surface_material().shader.code
+
+func _update_visual_code() -> void:
+	pass
 
 func _on_dock_resized() -> void:
 	dock_scene.sub_viewport.size = dock.size
@@ -169,7 +213,7 @@ func initialize_shader_code_edit() -> void:
 	# Currently there's no public API for getting the Shader Editor,
 	# so I get the internal ShaderEditor class to find it.
 	var base_control = EditorInterface.get_base_control()
-	var shader_editors = base_control.find_children("*", "TextShaderEditor", true, false)
+	var shader_editors = base_control.find_children("*", "ShaderEditor", true, false)
 	if shader_editors.size() == 0:
 		if _load_tries_left > 0:
 			_try_load_timer.start(2)
@@ -192,6 +236,8 @@ func _on_floating_requested() -> void:
 	if not _is_floating:
 		if shader_code_editor:
 			new_parent = shader_code_editor
+		elif visual_shader_editor:
+			new_parent = visual_shader_editor
 		else:
 			new_parent = get_editor_interface().get_base_control()
 			dock_scene.hide()
