@@ -59,23 +59,20 @@ func _get_current_caret_line() -> int:
 	if shader_code_editor:
 		return shader_code_editor.get_caret_line()
 	if visual_shader_editor and selected_visual_node_id:
+		# output node is ID 0
+		if selected_visual_node_id == "0":
+			# special line number for "just use original shader"
+			return -2
 		var text := _get_current_text()
 		var lines := text.split("\n")
 		for i in lines.size():
 			if lines[i].contains("n_out%sp0 = " % [selected_visual_node_id]):
 				return i
-		for i in lines.size():
-			for keys in ShaderLinePreviewerDock.BUILTINS:
-				for key in keys:
-					if lines[i].contains("%s = " % [key]):
-						# special line number for "just use original shader"
-						return -2
 	return -1
 
 func _process(delta):
 	if not shader_code_editor and not visual_shader_editor:
 		return
-		
 	var current_text = _get_current_text()
 	var current_caret = _get_current_caret_line()
 	var current_params = _snapshot_material_params()
