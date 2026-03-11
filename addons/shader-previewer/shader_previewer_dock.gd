@@ -91,6 +91,7 @@ var _mode_3d := false
 
 var _is_floating: bool = false
 var current_shader_code_editor: CodeEdit
+var current_visual_shader_editor: GraphEdit
 var _should_hide_buttons: bool = false # Used to prevent hiding during resize/move
 
 func _ready():
@@ -143,7 +144,7 @@ func set_floating_mode(floating: bool) -> void:
 			position = _last_floating_panel_pos
 		
 		# This prevent the preview to keep a now outside old size/pos
-		if current_shader_code_editor: resize_to_editor_shape()
+		if current_shader_code_editor or current_visual_shader_editor: resize_to_editor_shape()
 	else:
 		resize_view_button.hide()
 		move_view_button.hide()
@@ -238,7 +239,7 @@ func _gui_input(event: InputEvent) -> void:
 	elif _in_move:
 		var moved_pos: Vector2 = _initial_panel_position - delta_mouse_position
 		
-		if current_shader_code_editor:
+		if current_shader_code_editor or current_visual_shader_editor:
 			moved_pos = moved_pos.clamp(Vector2.ZERO, _get_current_max_pos())
 		
 		position = moved_pos
@@ -246,17 +247,32 @@ func _gui_input(event: InputEvent) -> void:
 		_last_floating_panel_pos = position
 
 func _get_current_max_size() -> Vector2:
-	return current_shader_code_editor.size - Vector2(
-			current_shader_code_editor.get_v_scroll_bar().size.x,
-			current_shader_code_editor.get_h_scroll_bar().size.y
-	)
+	if current_shader_code_editor:
+		return current_shader_code_editor.size - Vector2(
+				current_shader_code_editor.get_v_scroll_bar().size.x,
+				current_shader_code_editor.get_h_scroll_bar().size.y
+		)
+	elif current_visual_shader_editor:
+		return current_visual_shader_editor.size - Vector2(
+			current_visual_shader_editor.find_child("_v_scroll", true, false).size.x,
+			current_visual_shader_editor.find_child("_h_scroll", true, false).size.y,
+		)
+	return Vector2.ZERO
 
 func _get_current_max_pos() -> Vector2:
-	return current_shader_code_editor.size - (
-		size + Vector2(
-			current_shader_code_editor.get_v_scroll_bar().size.x,
-			current_shader_code_editor.get_h_scroll_bar().size.y
-	))
+	if current_shader_code_editor:
+		return current_shader_code_editor.size - (
+			size + Vector2(
+				current_shader_code_editor.get_v_scroll_bar().size.x,
+				current_shader_code_editor.get_h_scroll_bar().size.y
+		))
+	elif current_visual_shader_editor:
+		return current_visual_shader_editor.size - (
+			size + Vector2(
+				current_visual_shader_editor.find_child("_v_scroll", true, false).size.x,
+				current_visual_shader_editor.find_child("_h_scroll", true, false).size.y
+		))
+	return Vector2.ZERO
 
 func resize_to_editor_shape() -> void:
 	var max_size: Vector2 = _get_current_max_size()
@@ -428,6 +444,11 @@ func _get_shader_type(code: String) -> String:
 
 func _generate_preview_shader(original_code: String, line_index: int) -> Dictionary:
 	var result: Dictionary = {"success": false, "generated_code": ""}
+	
+	if line_index == -2:
+		result.success = true
+		result.generated_code = original_code
+		return result
 	
 	var shader_type := _get_shader_type(original_code)
 	if shader_type == "error":

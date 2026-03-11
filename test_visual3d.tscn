@@ -1,12 +1,11 @@
-[gd_scene format=3 uid="uid://dq06uwy7b3ncp"]
+[gd_scene format=3 uid="uid://cgwv67hoemoh8"]
 
-[ext_resource type="Shader" uid="uid://bv0wd2s3x7c6v" path="res://test3d.gdshader" id="1_vf330"]
+[ext_resource type="Shader" uid="uid://hwhoafwsm8p4" path="res://visual_shader3d.tres" id="1_jjuc7"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wcuis"]
 render_priority = 0
-shader = ExtResource("1_vf330")
+shader = ExtResource("1_jjuc7")
 shader_parameter/fresnel_color = Color(0.065599985, 0.49309328, 0.82, 1)
-shader_parameter/fresnel_intensity = 1.0
 shader_parameter/fresnel_power = 2.73
 
 [sub_resource type="SphereMesh" id="SphereMesh_vf330"]
