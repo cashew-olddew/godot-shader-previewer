@@ -8,6 +8,8 @@ var code_editor_parent: TabContainer = null
 var selected_node: Node = null
 var bottom_panel : Node = null
 
+var _is_floating: bool = false
+
 var _last_text: String = ""
 var _last_caret: int = -1
 var _last_material_params: Dictionary = {}
@@ -17,17 +19,21 @@ var _last_material_params: Dictionary = {}
 var _try_load_timer: Timer = null
 var _load_tries_left: int = 60 # Try for 2 minutes (60 times. One try takes 2 seconds.)
 
+var icon_tex = preload("res://addons/shader-previewer/assets/shader.svg")
+
 func _enter_tree():
 	dock_scene = preload("res://addons/shader-previewer/shader_previewer_dock.tscn").instantiate()
-	# Add new dock
-	var icon_tex = preload("res://addons/shader-previewer/assets/shader.svg")
+	dock_scene.floating_requested.connect(_on_floating_requested)
 	
-	dock = EditorDock.new()
+	# Floating by default
+	#_is_floating = true
+	#dock_scene.set_floating_mode(true)
+	
+	# Dock by default
+	dock = _create_dock()
 	dock.add_child(dock_scene)
-	dock.title = "Shader Preview"
-	dock.dock_icon = icon_tex
-	dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BL
-	add_dock(dock)
+	
+	dock_scene.set_floating_mode(_is_floating)
 	
 	_try_load_timer = Timer.new()
 	add_child(_try_load_timer)
@@ -58,10 +64,40 @@ func _process(delta):
 	_last_material_params = current_params
 	_on_preview_try()
 
+func _create_dock() -> EditorDock:
+	var new_dock: EditorDock = EditorDock.new()
+	new_dock.title = "Shader Preview"
+	new_dock.dock_icon = icon_tex
+	new_dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_BL
+	add_dock(new_dock)
+	
+	new_dock.resized.connect(_on_dock_resized)
+	
+	return new_dock
+
+func _get_selected_node_surface_material() -> ShaderMaterial:
+	if not "mesh" in selected_node:
+		return null
+	
+	var surface_count: int = selected_node.mesh.get_surface_count()
+	
+	var shader: Shader = Shader.new()
+	shader.code = shader_code_editor.text
+	var code_uniforms := shader.get_shader_uniform_list()
+	
+	for i in surface_count:
+		var surface_material := selected_node.get_active_material(i) as ShaderMaterial
+		if not surface_material:
+			continue
+		var surface_uniforms := surface_material.shader.get_shader_uniform_list()
+		if surface_uniforms == code_uniforms:
+			return surface_material
+	return null
+
 func _snapshot_material_params() -> Dictionary:
-	if not selected_node or not "material" in selected_node:
+	if not selected_node or (not "material" in selected_node and not selected_node.has_method("get_active_material")):
 		return {}
-	var mat = selected_node.material as ShaderMaterial
+	var mat = selected_node.material as ShaderMaterial if "material" in selected_node else _get_selected_node_surface_material()
 	if not mat or not mat.shader:
 		return {}
 	var result := {}
@@ -74,8 +110,8 @@ func _on_preview_try() -> void:
 	var caret_line_index = shader_code_editor.get_caret_line()
 	var shader_text: String = shader_code_editor.text
 	var selected_material = null
-	if selected_node and "material" in selected_node:
-		selected_material = selected_node.material as ShaderMaterial
+	if selected_node and ("material" in selected_node or selected_node.has_method("get_active_material")):
+		selected_material = (selected_node.material if "material" in selected_node else _get_selected_node_surface_material()) as ShaderMaterial
 	dock_scene.update_shader_preview(shader_text, caret_line_index, selected_material)
 
 func _on_node_selection_changed() -> void:
@@ -99,7 +135,31 @@ func _update_active_shader_editor() -> void:
 			
 		var ce = code_edits[0]
 		if shader_code_editor != ce:
+			if shader_code_editor:
+				shader_code_editor.resized.disconnect(_on_shader_editor_resize)
+			
 			shader_code_editor = ce
+			shader_code_editor.resized.connect(_on_shader_editor_resize)
+			
+			dock_scene.current_shader_code_editor = shader_code_editor
+			
+			if not _is_floating: return
+			
+			if dock_scene.get_parent() == null:
+				shader_code_editor.add_child(dock_scene)
+			else:
+				dock_scene.reparent(shader_code_editor)
+			
+			dock_scene.set_floating_mode(true)
+			dock_scene.show()
+
+func _on_shader_editor_resize() -> void:
+	if not _is_floating: return
+	
+	dock_scene.resize_to_editor_shape()
+
+func _on_dock_resized() -> void:
+	dock_scene.sub_viewport.size = dock.size
 
 func update_shader_editor_reference(_tab: int) -> void:
 	if not code_editor_parent:
@@ -133,7 +193,7 @@ func initialize_shader_code_edit() -> void:
 func _initialize_bottom_panel_tab_bar(base_control : Control) -> void:
 	var bottom_panels = base_control.find_children("*", "EditorBottomPanel", true, false)
 	if bottom_panels.is_empty():
-		return # don't need to do the retry strategy because initialize_shader_code_edit already handles it
+		return
 	bottom_panel = bottom_panels[0]
 	var tab_bars = bottom_panel.find_children("*", "TabBar", false, false)
 	if tab_bars.is_empty():
@@ -158,10 +218,37 @@ func _on_bottom_tab_selected(tab: int) -> void:
 	else:
 		dock.close()
 #endregion
+func _on_floating_requested() -> void:
+	var new_parent: Node
+	if not _is_floating:
+		if shader_code_editor:
+			new_parent = shader_code_editor
+		else:
+			new_parent = get_editor_interface().get_base_control()
+			dock_scene.hide()
+	
+	else:
+		dock = _create_dock()
+		new_parent = dock
+	
+	if dock_scene.get_parent():
+		dock_scene.reparent(new_parent)
+	else:
+		new_parent.add_child(dock_scene)
+	
+	_is_floating = not _is_floating
+	
+	if _is_floating and dock:
+		remove_dock(dock)
+		dock.queue_free()
+		dock = null
+	
+	dock_scene.set_floating_mode(_is_floating)
+
 func _exit_tree():
-	remove_dock(dock)
+	dock_scene.queue_free()
 	if dock:
+		remove_dock(dock)
 		dock.queue_free()
 	if _try_load_timer:
 		_try_load_timer.queue_free()
-	
