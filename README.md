@@ -13,6 +13,7 @@ https://github.com/user-attachments/assets/a2d11d94-5015-4043-a456-7bdf7684ee6a
 - **Multiline support** - Works even if the selected assignment is on multiple lines
 - **Spatial Shader support** - Feature added by [Razoric480](https://github.com/Razoric480)
 - **Dock and Floating Window views** - Feature added by [TheMagnat](https://github.com/TheMagnat)
+- **Auto-collapse previewer on shader editor close** - Featue added by [AllanDwyre](https://github.com/AllanDwyre)
 ---
 
 ## Usage Guide
