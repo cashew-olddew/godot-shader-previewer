@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode unshaded, blend_add, depth_draw_never;
+render_mode blend_add, depth_draw_never;
 
 uniform vec4 fresnel_color: source_color = vec4(0.0, 0.9, 0.9, 1.0);
 uniform float fresnel_intensity: hint_range(0.0, 10.0) = 1.0;
