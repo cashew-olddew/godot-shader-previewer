@@ -8,6 +8,7 @@ var code_editor_parent: TabContainer = null
 var selected_node: Node = null
 var bottom_panel : Node = null
 
+var _is_shader_editor_floating: bool = false
 var _is_floating: bool = false
 
 var _last_text: String = ""
@@ -137,9 +138,13 @@ func _update_active_shader_editor() -> void:
 		if shader_code_editor != ce:
 			if shader_code_editor:
 				shader_code_editor.resized.disconnect(_on_shader_editor_resize)
+				shader_code_editor.tree_entered.disconnect(_on_shader_editor_tree_entered)
 			
 			shader_code_editor = ce
 			shader_code_editor.resized.connect(_on_shader_editor_resize)
+			shader_code_editor.tree_entered.connect(_on_shader_editor_tree_entered)
+			
+			_on_shader_editor_tree_entered()
 			
 			dock_scene.current_shader_code_editor = shader_code_editor
 			
@@ -157,6 +162,11 @@ func _on_shader_editor_resize() -> void:
 	if not _is_floating: return
 	
 	dock_scene.resize_to_editor_shape()
+
+func _on_shader_editor_tree_entered() -> void:
+	_is_shader_editor_floating = shader_code_editor.get_window() != get_tree().root
+	if _is_shader_editor_floating and dock:
+		dock.make_visible()
 
 func _on_dock_resized() -> void:
 	dock_scene.sub_viewport.size = dock.size
@@ -206,6 +216,8 @@ func _initialize_bottom_panel_tab_bar(base_control : Control) -> void:
 	_on_bottom_tab_selected(tab_bar.current_tab)
 
 func _on_bottom_tab_selected(tab: int) -> void:
+	if _is_shader_editor_floating: return
+	
 	if not bottom_panel or not dock:
 		return
 	if tab == -1:
