@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/a2d11d94-5015-4043-a456-7bdf7684ee6a
 - **Different datatype support** - Supports `bool`, `int`, `float`, `vec2`, `vec3`, and `vec4` for immediate visual feedback in the editor.
 - **Multiline support** - Works even if the selected assignment is on multiple lines
 - **Spatial Shader support** - Feature added by [Razoric480](https://github.com/Razoric480)
-- **Spatial Shader Material Previewer - with two lights, sphere, cube and plane meshes** - - Feature added by [TheMagnat](https://github.com/TheMagnat)
+- **Spatial Shader Material Previewer - with rotation, two lights and sphere, cube and plane meshes** - Feature added by [TheMagnat](https://github.com/TheMagnat)
 - **Dock and Floating Window views** - Feature added by [TheMagnat](https://github.com/TheMagnat)
 - **Auto-collapse previewer on shader editor close** - Featue added by [AllanDwyre](https://github.com/AllanDwyre)
 ---
