@@ -1,10 +1,15 @@
 [gd_scene format=3 uid="uid://dw4o3k5bwxyuj"]
 
 [ext_resource type="Script" uid="uid://og7fsd8c7hlv" path="res://addons/shader-previewer/shader_previewer_dock.gd" id="1_sc46u"]
-[ext_resource type="Texture2D" uid="uid://u8p1bbn401ig" path="res://addons/shader-previewer/assets/GuiResizerTopLeft.svg" id="2_08suc"]
+[ext_resource type="Shader" uid="uid://ca1hgmvnr2vfg" path="res://addons/shader-previewer/preview_transparent_background.gdshader" id="2_a0j7m"]
 [ext_resource type="Shader" uid="uid://cbunay5xay0ut" path="res://addons/shader-previewer/previewer_negative_buttons.gdshader" id="2_bousf"]
 [ext_resource type="Texture2D" uid="uid://38iko1nxy5gh" path="res://addons/shader-previewer/assets/ToolMove.svg" id="3_bousf"]
 [ext_resource type="Texture2D" uid="uid://c0kmyu0q8wt33" path="res://addons/shader-previewer/assets/MakeFloating.svg" id="4_0v2jv"]
+[ext_resource type="Texture2D" uid="uid://mfkbouhde0rt" path="res://addons/shader-previewer/assets/MaterialPreviewSphere.svg" id="6_ns5tp"]
+[ext_resource type="Texture2D" uid="uid://dparnusmj5vdj" path="res://addons/shader-previewer/assets/MaterialPreviewLight1.svg" id="6_ssffe"]
+[ext_resource type="Texture2D" uid="uid://842vjtkaq6ac" path="res://addons/shader-previewer/assets/MaterialPreviewLight2.svg" id="7_40qvn"]
+[ext_resource type="Texture2D" uid="uid://brf6xhheyo8e7" path="res://addons/shader-previewer/assets/MaterialPreviewCube.svg" id="7_a0j7m"]
+[ext_resource type="Texture2D" uid="uid://cro6shjll56ns" path="res://addons/shader-previewer/assets/MaterialPreviewQuad.svg" id="8_fbw62"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8mrtu"]
 bg_color = Color(0.161, 0.161, 0.161, 1)
@@ -22,6 +27,17 @@ corner_detail = 5
 [sub_resource type="ViewportTexture" id="ViewportTexture_8mrtu"]
 viewport_path = NodePath("SubViewport")
 
+[sub_resource type="ViewportTexture" id="ViewportTexture_fbw62"]
+viewport_path = NodePath("SubViewport")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ouvmi"]
+resource_local_to_scene = true
+shader = ExtResource("2_a0j7m")
+shader_parameter/shape_texture = SubResource("ViewportTexture_fbw62")
+shader_parameter/light_square_color = Color(0.576, 0.588, 0.604, 1)
+shader_parameter/dark_square_color = Color(0.302, 0.318, 0.341, 1)
+shader_parameter/square_size = 16.0
+
 [sub_resource type="Gradient" id="Gradient_n82db"]
 offsets = PackedFloat32Array(0)
 colors = PackedColorArray(0.161, 0.161, 0.161, 1)
@@ -32,6 +48,7 @@ width = 1
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bousf"]
 shader = ExtResource("2_bousf")
+shader_parameter/contrast_mode = true
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g1wsc"]
 content_margin_left = 4.0
@@ -77,74 +94,213 @@ corner_detail = 5
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6l7md"]
 
-[sub_resource type="SphereMesh" id="SphereMesh_qxnvq"]
+[sub_resource type="SphereMesh" id="SphereMesh_ns5tp"]
 
-[node name="ShaderPreviewer" type="PanelContainer" unique_id=1958964742 node_paths=PackedStringArray("preview_mesh", "label", "camera_3d", "resize_view_button", "move_view_button", "floating_button")]
-offset_right = 200.0
-offset_bottom = 200.0
+[node name="ShaderPreviewer" type="PanelContainer" unique_id=1958964742 node_paths=PackedStringArray("preview_mesh", "label", "move_view_button", "floating_button", "sphere_shape_button", "cube_shape_button", "quad_shape_button", "light_1_button", "light_2_button")]
+offset_right = 400.0
+offset_bottom = 400.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_8mrtu")
 script = ExtResource("1_sc46u")
 viewport_texture = SubResource("ViewportTexture_8mrtu")
-preview_mesh = NodePath("SubViewport/MeshInstance3D")
+preview_mesh = NodePath("SubViewport/VerticalAnchor/LateralAnchor/MeshInstance3D")
 label = NodePath("Label")
-camera_3d = NodePath("SubViewport/Camera3D")
-resize_view_button = NodePath("Preview/TopButtonContainer/ResizeViewButton")
-move_view_button = NodePath("Preview/TopButtonContainer/MoveViewButton")
-floating_button = NodePath("Preview/TopButtonContainer/FloatingButton")
+move_view_button = NodePath("Preview/MarginContainer/ControlsContainer/TopButtonContainer/MoveViewButton")
+floating_button = NodePath("Preview/MarginContainer/ControlsContainer/TopButtonContainer/FloatingButton")
+material_for_3d = SubResource("ShaderMaterial_ouvmi")
+sphere_shape_button = NodePath("Preview/MarginContainer/ControlsContainer/3dControlsContainer/ShapeButtonsContainer/SphereShapeButton")
+cube_shape_button = NodePath("Preview/MarginContainer/ControlsContainer/3dControlsContainer/ShapeButtonsContainer/CubeShapeButton")
+quad_shape_button = NodePath("Preview/MarginContainer/ControlsContainer/3dControlsContainer/ShapeButtonsContainer/QuadShapeButton")
+light_1_button = NodePath("Preview/MarginContainer/ControlsContainer/3dControlsContainer/LightButtonsContainer/Light1Button")
+light_2_button = NodePath("Preview/MarginContainer/ControlsContainer/3dControlsContainer/LightButtonsContainer/Light2Button")
 
 [node name="Preview" type="TextureRect" parent="." unique_id=220516335]
+unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 mouse_force_pass_scroll_events = false
 texture = SubResource("GradientTexture1D_mm40d")
 expand_mode = 1
 
-[node name="TopButtonContainer" type="HBoxContainer" parent="Preview" unique_id=1034866965]
+[node name="MarginContainer" type="MarginContainer" parent="Preview" unique_id=1067598737]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="ControlsContainer" type="Control" parent="Preview/MarginContainer" unique_id=159816797]
+unique_name_in_owner = true
 visible = false
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TopButtonContainer" type="HBoxContainer" parent="Preview/MarginContainer/ControlsContainer" unique_id=1034866965]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
+offset_bottom = 40.0
 grow_horizontal = 2
+mouse_filter = 2
 
-[node name="ResizeViewButton" type="Button" parent="Preview/TopButtonContainer" unique_id=573976868]
+[node name="TopLeftSeparator" type="Control" parent="Preview/MarginContainer/ControlsContainer/TopButtonContainer" unique_id=1063811537]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MoveViewButton" type="Button" parent="Preview/MarginContainer/ControlsContainer/TopButtonContainer" unique_id=32045433]
 material = SubResource("ShaderMaterial_bousf")
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 mouse_filter = 1
-mouse_default_cursor_shape = 12
-theme_override_colors/icon_hover_color = Color(0.30323282, 0.30323282, 0.30323282, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
-theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
-icon = ExtResource("2_08suc")
-expand_icon = true
-
-[node name="MoveViewButton" type="Button" parent="Preview/TopButtonContainer" unique_id=32045433]
-material = SubResource("ShaderMaterial_bousf")
-custom_minimum_size = Vector2(40, 40)
-layout_mode = 2
-mouse_filter = 1
-theme_override_colors/icon_hover_color = Color(0.30323282, 0.30323282, 0.30323282, 1)
+mouse_default_cursor_shape = 13
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.61745477, 0.61745477, 0.6174547, 1)
+theme_override_colors/icon_hover_color = Color(0.8431838, 0.8431839, 0.84318364, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
 theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
 icon = ExtResource("3_bousf")
 expand_icon = true
 
-[node name="Separator" type="Control" parent="Preview/TopButtonContainer" unique_id=308318875]
+[node name="Separator" type="Control" parent="Preview/MarginContainer/ControlsContainer/TopButtonContainer" unique_id=308318875]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 1
+mouse_filter = 2
 
-[node name="FloatingButton" type="Button" parent="Preview/TopButtonContainer" unique_id=1404579260]
+[node name="FloatingButton" type="Button" parent="Preview/MarginContainer/ControlsContainer/TopButtonContainer" unique_id=1404579260]
 material = SubResource("ShaderMaterial_bousf")
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 mouse_filter = 1
-theme_override_colors/icon_hover_color = Color(0.30323282, 0.30323282, 0.30323282, 1)
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0.61745477, 0.61745477, 0.6174547, 1)
+theme_override_colors/icon_hover_color = Color(0.8431838, 0.8431839, 0.84318364, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
 theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
 icon = ExtResource("4_0v2jv")
+expand_icon = true
+
+[node name="3dControlsContainer" type="Control" parent="Preview/MarginContainer/ControlsContainer" unique_id=2049182281]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ShapeButtonsContainer" type="VBoxContainer" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer" unique_id=1537905775]
+layout_mode = 1
+offset_right = 35.0
+offset_bottom = 161.0
+mouse_filter = 2
+
+[node name="SphereShapeButton" type="Button" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer/ShapeButtonsContainer" unique_id=648634325]
+material = SubResource("ShaderMaterial_bousf")
+custom_minimum_size = Vector2(35, 40)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/icon_normal_color = Color(0.49747366, 0.49747366, 0.49747366, 1)
+theme_override_colors/icon_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_hover_color = Color(0.69965345, 0.6996535, 0.6996533, 1)
+theme_override_colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("6_ns5tp")
+expand_icon = true
+
+[node name="CubeShapeButton" type="Button" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer/ShapeButtonsContainer" unique_id=1328040943]
+material = SubResource("ShaderMaterial_bousf")
+custom_minimum_size = Vector2(35, 40)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/icon_normal_color = Color(0.49747366, 0.49747366, 0.49747366, 1)
+theme_override_colors/icon_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_hover_color = Color(0.69965345, 0.6996535, 0.6996533, 1)
+theme_override_colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
+toggle_mode = true
+icon = ExtResource("7_a0j7m")
+expand_icon = true
+
+[node name="QuadShapeButton" type="Button" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer/ShapeButtonsContainer" unique_id=1082061008]
+material = SubResource("ShaderMaterial_bousf")
+custom_minimum_size = Vector2(35, 40)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/icon_normal_color = Color(0.49747366, 0.49747366, 0.49747366, 1)
+theme_override_colors/icon_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_hover_color = Color(0.69965345, 0.6996535, 0.6996533, 1)
+theme_override_colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
+toggle_mode = true
+icon = ExtResource("8_fbw62")
+expand_icon = true
+
+[node name="LightButtonsContainer" type="VBoxContainer" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer" unique_id=1561323531]
+custom_minimum_size = Vector2(35, 40)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -35.0
+offset_bottom = 118.0
+grow_horizontal = 0
+mouse_filter = 2
+
+[node name="SpacingTop" type="Control" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer/LightButtonsContainer" unique_id=1237833600]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Light1Button" type="Button" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer/LightButtonsContainer" unique_id=1531432479]
+material = SubResource("ShaderMaterial_bousf")
+custom_minimum_size = Vector2(35, 40)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/icon_normal_color = Color(0.49747366, 0.49747366, 0.49747366, 1)
+theme_override_colors/icon_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_hover_color = Color(0.69965345, 0.6996535, 0.6996533, 1)
+theme_override_colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("6_ssffe")
+expand_icon = true
+
+[node name="Light2Button" type="Button" parent="Preview/MarginContainer/ControlsContainer/3dControlsContainer/LightButtonsContainer" unique_id=979373667]
+material = SubResource("ShaderMaterial_bousf")
+custom_minimum_size = Vector2(35, 40)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/icon_normal_color = Color(0.49747366, 0.49747366, 0.49747366, 1)
+theme_override_colors/icon_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_hover_color = Color(0.69965345, 0.6996535, 0.6996533, 1)
+theme_override_colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_g1wsc")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_08suc")
+theme_override_styles/hover = SubResource("StyleBoxFlat_bousf")
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("7_40qvn")
 expand_icon = true
 
 [node name="Label" type="RichTextLabel" parent="." unique_id=830699415]
@@ -161,14 +317,31 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="SubViewport" type="SubViewport" parent="." unique_id=838294480]
+unique_name_in_owner = true
 own_world_3d = true
+transparent_bg = true
+screen_space_aa = 2
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport" unique_id=1692863363]
-mesh = SubResource("SphereMesh_qxnvq")
+[node name="VerticalAnchor" type="Node3D" parent="SubViewport" unique_id=987334599]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.94923544, -0.31456655, 0, 0.31456655, 0.94923544, 0, 0, 0)
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewport" unique_id=222403114]
-transform = Transform3D(0.88618594, 0.32703856, -0.3282076, 0, 0.7083672, 0.7058441, 0.46332973, -0.62550914, 0.6277451, -0.8035857, 1.7281934, 1.5369753)
+[node name="LateralAnchor" type="Node3D" parent="SubViewport/VerticalAnchor" unique_id=597004500]
+unique_name_in_owner = true
+transform = Transform3D(0.87758255, 0, -0.47942555, 0, 1, 0, 0.47942555, 0, 0.87758255, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewport/VerticalAnchor/LateralAnchor" unique_id=1692863363]
+unique_name_in_owner = true
+mesh = SubResource("SphereMesh_ns5tp")
+
+[node name="DirectionalLight3D1" type="DirectionalLight3D" parent="SubViewport" unique_id=222403114]
+unique_name_in_owner = true
+transform = Transform3D(0.7071068, -0.5, 0.5, 0, 0.7071068, 0.7071068, -0.7071068, -0.5, 0.5, 1.5, 1.5, 1.5)
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="SubViewport" unique_id=1649905396]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, -3, 0)
 
 [node name="Camera3D" type="Camera3D" parent="SubViewport" unique_id=518502475]
-transform = Transform3D(0.7547096, -0.41463968, 0.50841653, 0, 0.7749556, 0.63201576, -0.656059, -0.4769884, 0.58486634, 1.7032725, 2.1173487, 1.9593909)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
 fov = 30.0

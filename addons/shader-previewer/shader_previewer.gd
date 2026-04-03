@@ -155,7 +155,7 @@ func _update_active_shader_editor() -> void:
 			else:
 				dock_scene.reparent(shader_code_editor)
 			
-			dock_scene.set_floating_mode(true)
+			await dock_scene.set_floating_mode(true)
 			dock_scene.show()
 
 func _on_shader_editor_resize() -> void:
