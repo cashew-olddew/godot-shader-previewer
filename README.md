@@ -7,7 +7,7 @@ https://github.com/user-attachments/assets/a2d11d94-5015-4043-a456-7bdf7684ee6a
 
 ## The Shader Previewer is now PART OF THE ENGINE!!!
 
-This is absolutely amazing news! The Shader Previewer addon has served as inspiration for [this PR](https://github.com/godotengine/godot/pull/117726) which got merged into the Engine! Huge thanks to [Chaosus](https://github.com/Chaosus) for making this possible. Also, huge thanks to anyone who used, supported and suggested making a feature proposal for this as a core feature for the Engine.
+This is absolutely amazing news! The Shader Previewer addon has served as inspiration for [this PR](https://github.com/godotengine/godot/pull/117726) which got merged into the Engine! Huge thanks to [Chaosus](https://github.com/Chaosus) for making this possible. Also, huge thanks to anyone who used, supported, contributed and suggested making a feature proposal for this as a core feature for the Engine.
 
 Now, does that make this addon obsolete? Not quite! The addon can still be used for older Godot versions and supports live uniform previews and scaling the shader preview window to allow visualizing the effect on different aspect ratios. Additionally, the addon can now be used for more experimental things like [making it compatible with visual shaders](https://github.com/cashew-olddew/godot-shader-previewer/issues/12). And honestly, even if the whole addon were to become obsolete, having it directly integrated in Godot is already such a huge achievement and serves the purpose of this little project.
 
