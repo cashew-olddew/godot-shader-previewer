@@ -93,6 +93,12 @@ func _get_selected_node_surface_material() -> ShaderMaterial:
 		var surface_uniforms := surface_material.shader.get_shader_uniform_list()
 		if surface_uniforms == code_uniforms:
 			return surface_material
+		
+		while "next_pass" in surface_material && surface_material.next_pass != null:
+			surface_material = surface_material.next_pass
+			surface_uniforms = surface_material.shader.get_shader_uniform_list()
+			if surface_uniforms == code_uniforms:
+				return surface_material
 	return null
 
 func _snapshot_material_params() -> Dictionary:
@@ -113,6 +119,7 @@ func _on_preview_try() -> void:
 	var selected_material = null
 	if selected_node and ("material" in selected_node or selected_node.has_method("get_active_material")):
 		selected_material = (selected_node.material if "material" in selected_node else _get_selected_node_surface_material()) as ShaderMaterial
+		
 	dock_scene.update_shader_preview(shader_text, caret_line_index, selected_material)
 
 func _on_node_selection_changed() -> void:
